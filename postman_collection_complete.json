@@ -1,0 +1,722 @@
+{
+	"info": {
+		"name": "Trainee API - Complete Backend (25+ Methods) - Fixed Tokens",
+		"description": "Complete REST API backend with proper HTTP status codes and fixed token management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "admin_token",
+			"value": ""
+		},
+		{
+			"key": "user_token",
+			"value": ""
+		},
+		{
+			"key": "test_token",
+			"value": ""
+		},
+		{
+			"key": "created_user_id",
+			"value": ""
+		},
+		{
+			"key": "created_post_id",
+			"value": ""
+		},
+		{
+			"key": "created_comment_id",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "1. GET Admin Authentication Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.collectionVariables.set('admin_token', jsonData.token);",
+							"    console.log('Admin token saved:', jsonData.token);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"john_fitness\",\n    \"password\": \"testpass123\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api-token-auth/",
+					"host": ["{{base_url}}"],
+					"path": ["api-token-auth", ""]
+				}
+			}
+		},
+		{
+			"name": "2. POST Register New User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.collectionVariables.set('created_user_id', jsonData.id);",
+							"    console.log('User created with ID:', jsonData.id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"demo_user_{{$timestamp}}\",\n    \"email\": \"demo{{$timestamp}}@example.com\",\n    \"password\": \"demopass123\",\n    \"first_name\": \"Demo\",\n    \"last_name\": \"User\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/users/register/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "users", "register", ""]
+				}
+			}
+		},
+		{
+			"name": "3. GET User Authentication Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.collectionVariables.set('user_token', jsonData.token);",
+							"    console.log('User token saved:', jsonData.token);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"sarah_healthy\",\n    \"password\": \"testpass123\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api-token-auth/",
+					"host": ["{{base_url}}"],
+					"path": ["api-token-auth", ""]
+				}
+			}
+		},
+		{
+			"name": "4. GET Users List",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/users/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "users", ""]
+				}
+			}
+		},
+		{
+			"name": "5. GET User Details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/users/2/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "users", "2", ""]
+				}
+			}
+		},
+		{
+			"name": "6. PUT Update User Profile",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Token {{user_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"first_name\": \"Sarah Updated\",\n    \"last_name\": \"Johnson\",\n    \"email\": \"sarah.updated@example.com\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/users/profile/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "users", "profile", ""]
+				}
+			}
+		},
+		{
+			"name": "7. GET Posts List (All)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/posts/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", ""]
+				}
+			}
+		},
+		{
+			"name": "8. GET Public Posts Only",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/posts/public/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "public", ""]
+				}
+			}
+		},
+		{
+			"name": "9. POST Create Post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.collectionVariables.set('created_post_id', jsonData.id);",
+							"    console.log('Post created with ID:', jsonData.id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Token {{user_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Demo Workout Plan {{$timestamp}}\",\n    \"type\": \"workout\",\n    \"description\": \"This is a demo workout plan created via API\",\n    \"calories\": 350,\n    \"recommendations\": \"Great for beginners!\",\n    \"is_public\": false\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "10. GET Post Details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{created_post_id}}/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{created_post_id}}", ""]
+				}
+			}
+		},
+		{
+			"name": "11. PUT Publish Post (User)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{created_post_id}}/publish/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{created_post_id}}", "publish", ""]
+				}
+			}
+		},
+		{
+			"name": "12. PUT Approve Post (Admin)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{created_post_id}}/approve/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{created_post_id}}", "approve", ""]
+				}
+			}
+		},
+		{
+			"name": "13. PUT Update Post",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Token {{user_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Updated Demo Workout Plan\",\n    \"type\": \"workout\",\n    \"description\": \"Updated description with more details\",\n    \"calories\": 400,\n    \"recommendations\": \"Perfect for intermediate level!\",\n    \"is_public\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{created_post_id}}/update/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{created_post_id}}", "update", ""]
+				}
+			}
+		},
+		{
+			"name": "14. GET Comments List",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/posts/1/comments/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "1", "comments", ""]
+				}
+			}
+		},
+		{
+			"name": "15. POST Create Comment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.collectionVariables.set('created_comment_id', jsonData.id);",
+							"    console.log('Comment created with ID:', jsonData.id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Token {{user_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"text\": \"Great workout plan! Thanks for sharing!\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/1/comments/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "1", "comments", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "16. PUT Update Comment",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Token {{user_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"text\": \"Updated comment: Amazing workout plan! Highly recommend!\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/comments/{{created_comment_id}}/update/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "comments", "{{created_comment_id}}", "update", ""]
+				}
+			}
+		},
+		{
+			"name": "17. GET Ratings List",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/posts/1/ratings/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "1", "ratings", ""]
+				}
+			}
+		},
+		{
+			"name": "18. POST Create Rating",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Token {{admin_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"rating\": 5\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{created_post_id}}/ratings/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{created_post_id}}", "ratings", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "19. DELETE Comment",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/comments/{{created_comment_id}}/delete/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "comments", "{{created_comment_id}}", "delete", ""]
+				}
+			}
+		},
+		{
+			"name": "20. DELETE Post",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{created_post_id}}/delete/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{created_post_id}}", "delete", ""]
+				}
+			}
+		},
+		{
+			"name": "21. DELETE User (Admin)",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/users/{{created_user_id}}/delete/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "users", "{{created_user_id}}", "delete", ""]
+				}
+			}
+		},
+		{
+			"name": "Get Test Token for Error Testing",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.collectionVariables.set('test_token', jsonData.token);",
+							"    console.log('Test token saved:', jsonData.token);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"sarah_healthy\",\n    \"password\": \"testpass123\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api-token-auth/",
+					"host": ["{{base_url}}"],
+					"path": ["api-token-auth", ""]
+				}
+			}
+		},
+		{
+			"name": "ERROR: 404 Not Found (Post)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/posts/999/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "999", ""]
+				}
+			}
+		},
+		{
+			"name": "ERROR: 404 Not Found (User)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/users/999/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "users", "999", ""]
+				}
+			}
+		},
+		{
+			"name": "ERROR: 401 Unauthorized",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Unauthorized Post\",\n    \"type\": \"workout\",\n    \"description\": \"Should fail without auth\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "ERROR: 403 Forbidden (Non-admin deleting user)",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{test_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/users/2/delete/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "users", "2", "delete", ""]
+				}
+			}
+		},
+		{
+			"name": "ERROR: 400 Bad Request (Invalid Post Data)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Token {{test_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"\",\n    \"type\": \"invalid_type\",\n    \"description\": \"\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "ERROR: 400 Bad Request (Invalid Rating)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Token {{test_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"rating\": 11\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/1/ratings/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "1", "ratings", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "SUCCESS: 201 Created (Register)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"success_test_{{$timestamp}}\",\n    \"email\": \"success{{$timestamp}}@example.com\",\n    \"password\": \"testpass123\",\n    \"first_name\": \"Success\",\n    \"last_name\": \"Test\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/users/register/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "users", "register", ""]
+				}
+			}
+		},
+		
+		{
+			"name": "FINAL: POST Logout (Clean up)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Token {{test_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/auth/logout/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "auth", "logout", ""]
+				}
+			}
+		}
+	]
+}
