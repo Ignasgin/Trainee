@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from drf_spectacular.utils import extend_schema_field
 from .models import Post, Comment, Rating
 
 class UserSerializer(serializers.ModelSerializer):
@@ -57,12 +58,14 @@ class PostSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Calories must be between 0 and 10000")
         return value
     
+    @extend_schema_field(serializers.FloatField)
     def get_average_rating(self, obj):
         ratings = obj.rating_set.all()
         if ratings:
             return sum(rating.rating for rating in ratings) / len(ratings)
         return None
     
+    @extend_schema_field(serializers.IntegerField)
     def get_comment_count(self, obj):
         return obj.comment_set.count()
 
