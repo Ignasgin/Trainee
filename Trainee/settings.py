@@ -191,21 +191,3 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Azure App Service HTTPS settings
-# Fix for ERR_TOO_MANY_REDIRECTS on Azure
-if not DEBUG:
-    # Trust Azure's proxy headers for HTTPS
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
-    # Don't redirect to HTTPS (Azure handles this)
-    SECURE_SSL_REDIRECT = False
-    
-    # Session cookie settings
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    
-    # HSTS settings (optional, but recommended for production)
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
