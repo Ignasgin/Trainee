@@ -27,6 +27,10 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if os.environ.get('ALLOWED_HOSTS') else ['*']
 
+# Disable APPEND_SLASH to prevent redirect loop on Azure
+# Azure Load Balancer causes CommonMiddleware to redirect infinitely
+APPEND_SLASH = False
+
 
 # Application definition
 
