@@ -84,9 +84,9 @@ if os.path.exists(BALTIMORE_CA_PATH):
     # Local development with Baltimore certificate
     DB_SSL_OPTIONS = {'ssl': {'ca': BALTIMORE_CA_PATH}}
 else:
-    # Azure production - use SSL but skip certificate verification
-    # Azure MySQL uses self-signed intermediate certificates
-    DB_SSL_OPTIONS = {'ssl_mode': 'REQUIRED'}  # Require SSL but don't verify cert
+    # Azure production - mysqlclient with SSL enabled but verification disabled
+    # This is required for Azure MySQL student/free tier with self-signed certificates
+    DB_SSL_OPTIONS = {'ssl': {}}  # Empty dict = SSL enabled, no verification
 
 DATABASES = {
     'default': {
