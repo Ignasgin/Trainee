@@ -76,16 +76,26 @@ WSGI_APPLICATION = 'Trainee.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# SSL certificate path for local development
-SSL_CA_PATH = os.path.join(BASE_DIR, 'BaltimoreCyberTrustRoot.crt.pem')
+# SSL certificate paths
+BALTIMORE_CA_PATH = os.path.join(BASE_DIR, 'BaltimoreCyberTrustRoot.crt.pem')
+DIGICERT_CA_PATH = os.path.join(BASE_DIR, 'DigiCertGlobalRootCA.crt.pem')
 
 # Database SSL options
-if os.path.exists(SSL_CA_PATH):
-    # Local development with certificate file
-    DB_SSL_OPTIONS = {'ssl': {'ca': SSL_CA_PATH}}
+if os.path.exists(BALTIMORE_CA_PATH):
+    # Local development with Baltimore certificate
+    DB_SSL_OPTIONS = {'ssl': {'ca': BALTIMORE_CA_PATH}}
+elif os.path.exists(DIGICERT_CA_PATH):
+    # Azure production with DigiCert certificate
+    DB_SSL_OPTIONS = {'ssl': {'ca': DIGICERT_CA_PATH}}
 else:
-    # Azure production - completely disable SSL (safe within Azure virtual network)
-    DB_SSL_OPTIONS = {}
+    # Fallback - use SSL but don't verify (not recommended)
+    import ssl
+    DB_SSL_OPTIONS = {
+        'ssl': {
+            'check_hostname': False,
+            'verify_mode': ssl.CERT_NONE
+        }
+    }
 
 DATABASES = {
     'default': {
@@ -98,9 +108,6 @@ DATABASES = {
         'OPTIONS': {
             'charset': 'utf8mb4',
             **DB_SSL_OPTIONS,
-            # PyMySQL specific - disable SSL verification
-            'ssl_verify_cert': False,
-            'ssl_verify_identity': False,
         },
     }
 }
