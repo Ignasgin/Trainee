@@ -78,24 +78,15 @@ WSGI_APPLICATION = 'Trainee.wsgi.application'
 
 # SSL certificate paths
 BALTIMORE_CA_PATH = os.path.join(BASE_DIR, 'BaltimoreCyberTrustRoot.crt.pem')
-DIGICERT_CA_PATH = os.path.join(BASE_DIR, 'DigiCertGlobalRootCA.crt.pem')
 
 # Database SSL options
 if os.path.exists(BALTIMORE_CA_PATH):
     # Local development with Baltimore certificate
     DB_SSL_OPTIONS = {'ssl': {'ca': BALTIMORE_CA_PATH}}
-elif os.path.exists(DIGICERT_CA_PATH):
-    # Azure production with DigiCert certificate
-    DB_SSL_OPTIONS = {'ssl': {'ca': DIGICERT_CA_PATH}}
 else:
-    # Fallback - use SSL but don't verify (not recommended)
-    import ssl
-    DB_SSL_OPTIONS = {
-        'ssl': {
-            'check_hostname': False,
-            'verify_mode': ssl.CERT_NONE
-        }
-    }
+    # Azure production - use SSL but skip certificate verification
+    # Azure MySQL uses self-signed intermediate certificates
+    DB_SSL_OPTIONS = {'ssl_mode': 'REQUIRED'}  # Require SSL but don't verify cert
 
 DATABASES = {
     'default': {
