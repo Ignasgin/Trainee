@@ -14,4 +14,10 @@ python manage.py migrate --noinput
 
 # Start Gunicorn
 echo "Starting Gunicorn server..."
-gunicorn --bind=0.0.0.0:${PORT:-8000} --config gunicorn_config.py Trainee.wsgi
+gunicorn --bind=0.0.0.0:${PORT:-8000} \
+         --workers 3 \
+         --timeout 600 \
+         --access-logfile '-' \
+         --error-logfile '-' \
+         --log-level info \
+         Trainee.wsgi:application
