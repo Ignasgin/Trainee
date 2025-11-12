@@ -84,8 +84,14 @@ if os.path.exists(SSL_CA_PATH):
     # Local development with certificate file
     DB_SSL_OPTIONS = {'ssl': {'ca': SSL_CA_PATH}}
 else:
-    # Azure production - use ssl_mode instead of certificate
-    DB_SSL_OPTIONS = {'ssl_mode': 'REQUIRED'}
+    # Azure production - disable certificate verification for self-signed certs
+    import ssl
+    DB_SSL_OPTIONS = {
+        'ssl': {
+            'cert_reqs': ssl.CERT_NONE,
+            'check_hostname': False
+        }
+    }
 
 DATABASES = {
     'default': {
