@@ -1,11 +1,25 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Section(models.Model):
+    """Top-level category for posts (e.g., 'Nutrition', 'Fitness', 'Weight Loss')"""
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        ordering = ['name']
+
 class Post(models.Model):
     TYPE_CHOICES = [
         ('meal', 'Meal Plan'),
         ('workout', 'Workout Plan'),
     ]
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='posts', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
@@ -26,7 +40,7 @@ class Post(models.Model):
         return self.title
 
 class Comment(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

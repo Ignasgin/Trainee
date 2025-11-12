@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from core.models import Post, Comment, Rating
+from core.models import Post, Comment, Rating, Section
 from django.utils import timezone
 import random
 
@@ -9,6 +9,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Creating test data...')
+        
+        # Create sections first
+        self.create_sections()
         
         # Create test users
         self.create_users()
@@ -25,6 +28,40 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS('Successfully created test data!')
         )
+
+    def create_sections(self):
+        """Create main sections for organizing posts"""
+        
+        sections_data = [
+            {
+                'name': 'Nutrition',
+                'description': 'Meal plans, recipes, and nutrition guides'
+            },
+            {
+                'name': 'Strength Training',
+                'description': 'Weightlifting and muscle building workouts'
+            },
+            {
+                'name': 'Cardio & HIIT',
+                'description': 'High-intensity and cardiovascular exercises'
+            },
+            {
+                'name': 'Yoga & Flexibility',
+                'description': 'Yoga routines and flexibility training'
+            },
+            {
+                'name': 'Weight Loss',
+                'description': 'Programs and tips for healthy weight loss'
+            }
+        ]
+        
+        for section_data in sections_data:
+            section, created = Section.objects.get_or_create(
+                name=section_data['name'],
+                defaults={'description': section_data['description']}
+            )
+            if created:
+                self.stdout.write(f'Created section: {section.name}')
 
     def create_users(self):
         """Create test users with different roles"""
@@ -266,13 +303,21 @@ Day 3 - Deadlift Focus:
             }
         ]
 
+        # Get sections
+        nutrition_section = Section.objects.get(name='Nutrition')
+        weight_loss_section = Section.objects.get(name='Weight Loss')
+        
         # Create meal plan posts
         for i, post_data in enumerate(meal_plans):
             user = users[i % len(users)]
+            # Assign section based on content
+            section = weight_loss_section if 'Weight Loss' in post_data['title'] or 'Vegan' in post_data['title'] else nutrition_section
+            
             post, created = Post.objects.get_or_create(
                 title=post_data['title'],
                 user=user,
                 defaults={
+                    'section': section,
                     'description': post_data['description'],
                     'type': post_data['type'],
                     'is_public': post_data['is_public'],
@@ -282,15 +327,29 @@ Day 3 - Deadlift Focus:
                 }
             )
             if created:
-                self.stdout.write(f'Created meal plan: {post.title}')
+                self.stdout.write(f'Created meal plan: {post.title} in {section.name}')
 
+        # Get workout sections
+        strength_section = Section.objects.get(name='Strength Training')
+        cardio_section = Section.objects.get(name='Cardio & HIIT')
+        yoga_section = Section.objects.get(name='Yoga & Flexibility')
+        
         # Create workout plan posts
         for i, post_data in enumerate(workout_plans):
             user = users[i % len(users)]
+            # Assign section based on workout type
+            if 'HIIT' in post_data['title'] or 'Cardio' in post_data['title']:
+                section = cardio_section
+            elif 'Yoga' in post_data['title']:
+                section = yoga_section
+            else:
+                section = strength_section
+                
             post, created = Post.objects.get_or_create(
                 title=post_data['title'],
                 user=user,
                 defaults={
+                    'section': section,
                     'description': post_data['description'],
                     'type': post_data['type'],
                     'is_public': post_data['is_public'],
@@ -300,7 +359,7 @@ Day 3 - Deadlift Focus:
                 }
             )
             if created:
-                self.stdout.write(f'Created workout plan: {post.title}')
+                self.stdout.write(f'Created workout plan: {post.title} in {section.name}')
 
     def create_comments(self):
         """Create realistic comments on posts"""
@@ -382,6 +441,7 @@ Day 3 - Deadlift Focus:
     def show_statistics(self):
         """Display created data statistics"""
         
+        sections_count = Section.objects.count()
         users_count = User.objects.count()
         posts_count = Post.objects.count()
         meal_plans_count = Post.objects.filter(type='meal').count()
@@ -393,6 +453,7 @@ Day 3 - Deadlift Focus:
         self.stdout.write('\n' + '='*50)
         self.stdout.write('TEST DATA STATISTICS:')
         self.stdout.write('='*50)
+        self.stdout.write(f'Sections created: {sections_count}')
         self.stdout.write(f'Users created: {users_count}')
         self.stdout.write(f'Posts created: {posts_count}')
         self.stdout.write(f'  - Meal plans: {meal_plans_count}')
@@ -401,6 +462,12 @@ Day 3 - Deadlift Focus:
         self.stdout.write(f'Comments created: {comments_count}')
         self.stdout.write(f'Ratings created: {ratings_count}')
         self.stdout.write('='*50)
+        
+        # Show sections with post counts
+        self.stdout.write('\nSECTIONS:')
+        for section in Section.objects.all():
+            post_count = section.posts.count()
+            self.stdout.write(f'  {section.name}: {post_count} posts')
         
         # Show average ratings for each post
         self.stdout.write('\nPOST RATINGS:')

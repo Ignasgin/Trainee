@@ -1,7 +1,19 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema_field
-from .models import Post, Comment, Rating
+from .models import Post, Comment, Rating, Section
+
+class SectionSerializer(serializers.ModelSerializer):
+    post_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Section
+        fields = ['id', 'name', 'description', 'created_at', 'updated_at', 'post_count']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    @extend_schema_field(serializers.IntegerField)
+    def get_post_count(self, obj):
+        return obj.posts.count()
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,12 +42,20 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    section = SectionSerializer(read_only=True)
+    section_id = serializers.PrimaryKeyRelatedField(
+        queryset=Section.objects.all(), 
+        source='section', 
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
     average_rating = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Post
-        fields = ['id', 'user', 'title', 'type', 'description', 'is_public', 'is_approved', 
+        fields = ['id', 'section', 'section_id', 'user', 'title', 'type', 'description', 'is_public', 'is_approved', 
                  'calories', 'recommendations', 'created_at', 'updated_at', 'average_rating', 'comment_count']
         read_only_fields = ['id', 'user', 'created_at', 'updated_at', 'is_approved']
     
@@ -67,7 +87,7 @@ class PostSerializer(serializers.ModelSerializer):
     
     @extend_schema_field(serializers.IntegerField)
     def get_comment_count(self, obj):
-        return obj.comment_set.count()
+        return obj.comments.count()
 
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

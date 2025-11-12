@@ -1,0 +1,793 @@
+{
+	"info": {
+		"name": "Trainee API - Minimal Collection",
+		"description": "Minimal REST API collection with essential tests only - one test per endpoint and one per exception type",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "section_id",
+			"value": ""
+		},
+		{
+			"key": "post_id",
+			"value": ""
+		},
+		{
+			"key": "comment_id",
+			"value": ""
+		},
+		{
+			"key": "rating_id",
+			"value": ""
+		},
+		{
+			"key": "exception_post_id",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "1. Auth - Login (200)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    // Save JWT access token",
+							"    pm.collectionVariables.set('auth_token', jsonData.access);",
+							"    // Save refresh token (optional)",
+							"    pm.collectionVariables.set('refresh_token', jsonData.refresh);",
+							"    console.log('✓ JWT Access Token saved');",
+							"    console.log('✓ User:', jsonData.user.username, '| Role:', jsonData.user.role);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"john_fitness\",\n    \"password\": \"testpass123\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/auth/login/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "auth", "login", ""]
+				}
+			}
+		},
+		{
+			"name": "2. Sections - List (200)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.length > 0) {",
+							"        pm.collectionVariables.set('section_id', jsonData[0].id);",
+							"        console.log('✓ Section ID saved:', jsonData[0].id);",
+							"    } else {",
+							"        console.log('⚠ No sections found, setting default section_id=1');",
+							"        pm.collectionVariables.set('section_id', '1');",
+							"    }",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/sections/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "sections", ""]
+				}
+			}
+		},
+		{
+			"name": "3. Posts - List Public (200)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.results && jsonData.results.length > 0) {",
+							"        pm.collectionVariables.set('post_id', jsonData.results[0].id);",
+							"        console.log('✓ Post ID saved from public posts:', jsonData.results[0].id);",
+							"    } else if (jsonData.length > 0) {",
+							"        pm.collectionVariables.set('post_id', jsonData[0].id);",
+							"        console.log('✓ Post ID saved from public posts:', jsonData[0].id);",
+							"    } else {",
+							"        console.log('⚠ No public posts found - will create new one in test 4');",
+							"    }",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/posts/public/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "public", ""]
+				}
+			}
+		},
+		{
+			"name": "4. Posts - Create (201)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.collectionVariables.set('post_id', jsonData.id);",
+							"    console.log('✓ New Post created and ID saved:', jsonData.id);",
+							"} else {",
+							"    console.log('✗ Post creation failed with status:', pm.response.code);",
+							"    console.log('Response:', pm.response.text());",
+							"    // Fallback: use existing post_id from test 3 if available",
+							"    var existing_post_id = pm.collectionVariables.get('post_id');",
+							"    if (existing_post_id) {",
+							"        console.log('Using existing post_id from test 3:', existing_post_id);",
+							"    } else {",
+							"        console.log('⚠ Warning: No post_id available - tests 5, 6 may fail');",
+							"    }",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"section_id\": \"{{section_id}}\",\n    \"title\": \"Test Workout Plan\",\n    \"type\": \"workout\",\n    \"description\": \"A comprehensive workout plan for beginners\",\n    \"calories\": 300,\n    \"is_public\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "5. Posts - PATCH Update (200)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Verify post_id is set from previous tests",
+							"var post_id = pm.collectionVariables.get('post_id');",
+							"if (!post_id) {",
+							"    console.log('⚠ No post_id - using default 1');",
+							"    pm.collectionVariables.set('post_id', '1');",
+							"} else {",
+							"    console.log('Using post_id:', post_id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Updated Title via PATCH\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{post_id}}/update/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{post_id}}", "update", ""]
+				}
+			}
+		},
+		{
+			"name": "6. Posts - PUT Full Replace (200)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Verify post_id is set from previous tests",
+							"var post_id = pm.collectionVariables.get('post_id');",
+							"if (!post_id) {",
+							"    console.log('⚠ No post_id - using default 1');",
+							"    pm.collectionVariables.set('post_id', '1');",
+							"} else {",
+							"    console.log('Using post_id:', post_id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Replaced via PUT\",\n    \"type\": \"meal\",\n    \"description\": \"Complete replacement with all required fields\",\n    \"calories\": 500,\n    \"is_public\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{post_id}}/replace/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{post_id}}", "replace", ""]
+				}
+			}
+		},
+		{
+			"name": "7. Comments - Create (201)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Ensure post_id is set for comment creation",
+							"var post_id = pm.collectionVariables.get('post_id');",
+							"if (!post_id) {",
+							"    console.log('⚠ No post_id - using default 1');",
+							"    pm.collectionVariables.set('post_id', '1');",
+							"} else {",
+							"    console.log('Creating comment for post_id:', post_id);",
+							"}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.collectionVariables.set('comment_id', jsonData.id);",
+							"    console.log('✓ Comment ID saved:', jsonData.id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"text\": \"Great post! Very helpful information.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{post_id}}/comments/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{post_id}}", "comments", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "8. Comments - PATCH Update (200)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Verify comment_id is set from test 7",
+							"var comment_id = pm.collectionVariables.get('comment_id');",
+							"if (!comment_id) {",
+							"    console.log('⚠ No comment_id - using default 1');",
+							"    pm.collectionVariables.set('comment_id', '1');",
+							"} else {",
+							"    console.log('Updating comment_id:', comment_id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"text\": \"Updated comment text\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/comments/{{comment_id}}/update/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "comments", "{{comment_id}}", "update", ""]
+				}
+			}
+		},
+		{
+			"name": "9. Ratings - Create (201)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Ensure post_id is set for rating creation",
+							"var post_id = pm.collectionVariables.get('post_id');",
+							"if (!post_id) {",
+							"    console.log('⚠ No post_id - using default 1');",
+							"    pm.collectionVariables.set('post_id', '1');",
+							"} else {",
+							"    console.log('Creating rating for post_id:', post_id);",
+							"}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200 || pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.collectionVariables.set('rating_id', jsonData.id);",
+							"    console.log('✓ Rating ID saved:', jsonData.id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"rating\": 5\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{post_id}}/ratings/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{post_id}}", "ratings", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "10. Ratings - PATCH Update (200)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Verify rating_id is set from test 9",
+							"var rating_id = pm.collectionVariables.get('rating_id');",
+							"if (!rating_id) {",
+							"    console.log('⚠ No rating_id - using default 1');",
+							"    pm.collectionVariables.set('rating_id', '1');",
+							"} else {",
+							"    console.log('Updating rating_id:', rating_id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"rating\": 4\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/ratings/{{rating_id}}/update/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "ratings", "{{rating_id}}", "update", ""]
+				}
+			}
+		},
+		{
+			"name": "11. Comments - PUT Full Replace (200)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Verify comment_id is set from test 7",
+							"var comment_id = pm.collectionVariables.get('comment_id');",
+							"if (!comment_id) {",
+							"    console.log('⚠ No comment_id - using default 1');",
+							"    pm.collectionVariables.set('comment_id', '1');",
+							"} else {",
+							"    console.log('Replacing comment_id:', comment_id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"text\": \"Completely replaced comment text via PUT\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/comments/{{comment_id}}/replace/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "comments", "{{comment_id}}", "replace", ""]
+				}
+			}
+		},
+		{
+			"name": "12. Ratings - PUT Full Replace (200)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Verify rating_id is set from test 9",
+							"var rating_id = pm.collectionVariables.get('rating_id');",
+							"if (!rating_id) {",
+							"    console.log('⚠ No rating_id - using default 1');",
+							"    pm.collectionVariables.set('rating_id', '1');",
+							"} else {",
+							"    console.log('Replacing rating_id:', rating_id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"rating\": 5\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/ratings/{{rating_id}}/replace/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "ratings", "{{rating_id}}", "replace", ""]
+				}
+			}
+		},
+		{
+			"name": "13. Hierarchical - Section→Posts (200)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Ensure section_id is set from test 2",
+							"var section_id = pm.collectionVariables.get('section_id');",
+							"if (!section_id) {",
+							"    console.log('⚠ No section_id - using default 1');",
+							"    pm.collectionVariables.set('section_id', '1');",
+							"} else {",
+							"    console.log('Using section_id:', section_id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/sections/{{section_id}}/posts/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "sections", "{{section_id}}", "posts", ""]
+				}
+			}
+		},
+		{
+			"name": "14. Hierarchical - Section→Post→Comments (200)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Ensure both section_id and post_id are set",
+							"var section_id = pm.collectionVariables.get('section_id');",
+							"var post_id = pm.collectionVariables.get('post_id');",
+							"",
+							"if (!section_id) {",
+							"    console.log('⚠ No section_id - using default 1');",
+							"    pm.collectionVariables.set('section_id', '1');",
+							"}",
+							"if (!post_id) {",
+							"    console.log('⚠ No post_id - using default 1');",
+							"    pm.collectionVariables.set('post_id', '1');",
+							"}",
+							"console.log('Using section_id:', pm.collectionVariables.get('section_id'));",
+							"console.log('Using post_id:', pm.collectionVariables.get('post_id'));"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/sections/{{section_id}}/posts/{{post_id}}/comments/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "sections", "{{section_id}}", "posts", "{{post_id}}", "comments", ""]
+				}
+			}
+		},
+		{
+			"name": "15. Posts - Delete (204)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Verify post_id is set from previous tests",
+							"var post_id = pm.collectionVariables.get('post_id');",
+							"if (!post_id) {",
+							"    console.log('⚠ No post_id - using default 1');",
+							"    pm.collectionVariables.set('post_id', '1');",
+							"} else {",
+							"    console.log('Deleting post_id:', post_id);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{post_id}}/delete/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{post_id}}", "delete", ""]
+				}
+			}
+		},
+		{
+			"name": "EXCEPTION 1: Unauthorized (401)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Test\",\n    \"type\": \"workout\",\n    \"description\": \"Test post\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "EXCEPTION 2: Not Found (404)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/posts/99999/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "99999", ""]
+				}
+			}
+		},
+		{
+			"name": "EXCEPTION 3: PUT Missing Fields (422)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Missing required fields\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{post_id}}/replace/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{post_id}}", "replace", ""]
+				}
+			}
+		},
+		{
+			"name": "EXCEPTION 4: Validation Error (400)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"AB\",\n    \"type\": \"workout\",\n    \"description\": \"Too short\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "EXCEPTION 5: Rating Out of Range (400)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Get a valid post_id from public posts to ensure 400 error (not 404)",
+							"pm.sendRequest({",
+							"    url: pm.collectionVariables.get('base_url') + '/api/posts/public/',",
+							"    method: 'GET'",
+							"}, function (err, response) {",
+							"    if (!err && response.code === 200) {",
+							"        var data = response.json();",
+							"        var posts = data.results || data;",
+							"        if (posts && posts.length > 0) {",
+							"            pm.collectionVariables.set('exception_post_id', posts[0].id);",
+							"            console.log('✓ Using existing post for exception test:', posts[0].id);",
+							"        } else {",
+							"            console.log('⚠ No public posts - using ID 1');",
+							"            pm.collectionVariables.set('exception_post_id', '1');",
+							"        }",
+							"    } else {",
+							"        console.log('⚠ Failed to fetch posts - using ID 1');",
+							"        pm.collectionVariables.set('exception_post_id', '1');",
+							"    }",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"rating\": 10\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/posts/{{exception_post_id}}/ratings/create/",
+					"host": ["{{base_url}}"],
+					"path": ["api", "posts", "{{exception_post_id}}", "ratings", "create", ""]
+				}
+			}
+		}
+	]
+}
+

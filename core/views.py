@@ -1,13 +1,48 @@
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema, OpenApiResponse
-from .models import Post, Comment, Rating
-from .serializers import UserSerializer, UserCreateSerializer, UserUpdateSerializer, PostSerializer, CommentSerializer, RatingSerializer
+from .models import Post, Comment, Rating, Section
+from .serializers import UserSerializer, UserCreateSerializer, UserUpdateSerializer, PostSerializer, CommentSerializer, RatingSerializer, SectionSerializer
+
+# Section views
+@extend_schema(tags=['Sections'])
+class SectionListView(generics.ListCreateAPIView):
+    """List all sections or create a new section (admin only for creation)"""
+    queryset = Section.objects.all()
+    serializer_class = SectionSerializer
+    
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()]
+
+@extend_schema(tags=['Sections'])
+class SectionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Get, update or delete a section (admin only for update/delete)"""
+    queryset = Section.objects.all()
+    serializer_class = SectionSerializer
+    
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()]
+
+@extend_schema(tags=['Sections', 'Posts'])
+class SectionPostsView(generics.ListAPIView):
+    """List all posts in a specific section"""
+    serializer_class = PostSerializer
+    permission_classes = [permissions.AllowAny]
+    
+    def get_queryset(self):
+        section_id = self.kwargs['section_id']
+        # Show only approved public posts for non-authenticated users
+        if not self.request.user.is_authenticated:
+            return Post.objects.filter(section_id=section_id, is_public=True, is_approved=True)
+        # Show all public posts for authenticated users
+        return Post.objects.filter(section_id=section_id, is_public=True)
 
 # User views
 @extend_schema(tags=['Users'])
@@ -56,28 +91,6 @@ class UserDeleteView(generics.DestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAdminUser]
 
-# Authentication views
-@extend_schema(
-    request=None,
-    responses={
-        200: OpenApiResponse(description='Successfully logged out'),
-    },
-    description='Logout user and delete authentication token',
-    tags=['Authentication']
-)
-@api_view(['POST'])
-@permission_classes([permissions.AllowAny])
-def logout_view(request):
-    """Logout user and delete token"""
-    if request.user.is_authenticated:
-        try:
-            token = Token.objects.get(user=request.user)
-            token.delete()
-        except Token.DoesNotExist:
-            pass
-        logout(request)
-    return Response({'message': 'Successfully logged out'}, status=status.HTTP_200_OK)
-
 # Post views
 @extend_schema(tags=['Posts'])
 class PostListView(generics.ListAPIView):
@@ -105,14 +118,58 @@ class PostCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-@extend_schema(tags=['Posts'])
+@extend_schema(
+    tags=['Posts'],
+    summary='Partial update of post (PATCH only)',
+    description='Update specific fields of a post. Only the fields provided in the request will be updated.'
+)
 class PostUpdateView(generics.UpdateAPIView):
+    """PATCH only - partial update of post fields"""
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ['patch']  # Only allow PATCH
     
     def get_queryset(self):
         return Post.objects.filter(user=self.request.user)
+
+@extend_schema(
+    tags=['Posts'],
+    summary='Full replacement of post (PUT only)',
+    description='Replace entire post with new data. All required fields must be provided.',
+    responses={
+        200: PostSerializer,
+        422: OpenApiResponse(description='Unprocessable Entity - missing required fields')
+    }
+)
+class PostReplaceView(generics.UpdateAPIView):
+    """PUT only - full replacement of post"""
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ['put']  # Only allow PUT
+    
+    def get_queryset(self):
+        return Post.objects.filter(user=self.request.user)
+    
+    def update(self, request, *args, **kwargs):
+        # Required fields for PUT (full replacement)
+        required_fields = ['title', 'type', 'description']
+        missing_fields = [field for field in required_fields if field not in request.data]
+        
+        if missing_fields:
+            return Response(
+                {
+                    'error': 'PUT requires all required fields',
+                    'missing_fields': missing_fields,
+                    'required_fields': required_fields,
+                    'message': 'Use PATCH for partial updates',
+                    'detail': 'PUT replaces the entire resource and requires all mandatory fields. Use PATCH to update specific fields only.'
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
+        
+        return super().update(request, *args, **kwargs)
 
 @extend_schema(tags=['Posts'])
 class PostDeleteView(generics.DestroyAPIView):
@@ -206,14 +263,56 @@ class CommentCreateView(generics.CreateAPIView):
         post = get_object_or_404(Post, id=post_id)
         serializer.save(user=self.request.user, post=post)
 
-@extend_schema(tags=['Comments'])
+@extend_schema(
+    tags=['Comments'],
+    summary='Partial update of comment (PATCH only)',
+    description='Update specific fields of a comment. Only provided fields will be updated.'
+)
 class CommentUpdateView(generics.UpdateAPIView):
+    """PATCH only - partial update"""
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ['patch']
     
     def get_queryset(self):
         return Comment.objects.filter(user=self.request.user)
+
+@extend_schema(
+    tags=['Comments'],
+    summary='Full replacement of comment (PUT only)',
+    description='Replace entire comment. Text field is required.',
+    responses={
+        200: CommentSerializer,
+        422: OpenApiResponse(description='Missing required field: text')
+    }
+)
+class CommentReplaceView(generics.UpdateAPIView):
+    """PUT only - full replacement"""
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ['put']
+    
+    def get_queryset(self):
+        return Comment.objects.filter(user=self.request.user)
+    
+    def update(self, request, *args, **kwargs):
+        required_fields = ['text']
+        missing_fields = [field for field in required_fields if field not in request.data]
+        
+        if missing_fields:
+            return Response(
+                {
+                    'error': 'PUT requires all required fields',
+                    'missing_fields': missing_fields,
+                    'required_fields': required_fields,
+                    'message': 'Use PATCH for partial updates'
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
+        
+        return super().update(request, *args, **kwargs)
 
 @extend_schema(tags=['Comments'])
 class CommentDeleteView(generics.DestroyAPIView):
@@ -276,16 +375,54 @@ class RatingCreateView(generics.CreateAPIView):
 
 @extend_schema(
     tags=['Ratings'],
-    summary="Update user's rating",
-    description="Update an existing rating (only own ratings can be updated)"
+    summary="Partial update of rating (PATCH only)",
+    description="Update specific fields of a rating. Only provided fields will be updated."
 )
 class RatingUpdateView(generics.UpdateAPIView):
+    """PATCH only - partial update"""
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
     permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ['patch']
     
     def get_queryset(self):
         return Rating.objects.filter(user=self.request.user)
+
+@extend_schema(
+    tags=['Ratings'],
+    summary="Full replacement of rating (PUT only)",
+    description="Replace entire rating. Rating value (1-5) is required.",
+    responses={
+        200: RatingSerializer,
+        422: OpenApiResponse(description='Missing required field: rating')
+    }
+)
+class RatingReplaceView(generics.UpdateAPIView):
+    """PUT only - full replacement"""
+    queryset = Rating.objects.all()
+    serializer_class = RatingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ['put']
+    
+    def get_queryset(self):
+        return Rating.objects.filter(user=self.request.user)
+    
+    def update(self, request, *args, **kwargs):
+        required_fields = ['rating']
+        missing_fields = [field for field in required_fields if field not in request.data]
+        
+        if missing_fields:
+            return Response(
+                {
+                    'error': 'PUT requires all required fields',
+                    'missing_fields': missing_fields,
+                    'required_fields': required_fields,
+                    'message': 'Use PATCH for partial updates'
+                },
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
+        
+        return super().update(request, *args, **kwargs)
 
 @extend_schema(
     tags=['Ratings'],
