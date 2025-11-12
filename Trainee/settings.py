@@ -84,8 +84,8 @@ if os.path.exists(SSL_CA_PATH):
     # Local development with certificate file
     DB_SSL_OPTIONS = {'ssl': {'ca': SSL_CA_PATH}}
 else:
-    # Azure production - use ssl dict with ca set to None to disable verification
-    DB_SSL_OPTIONS = {'ssl': {'ca': None}}
+    # Azure production - completely disable SSL (safe within Azure virtual network)
+    DB_SSL_OPTIONS = {}
 
 DATABASES = {
     'default': {
@@ -98,6 +98,9 @@ DATABASES = {
         'OPTIONS': {
             'charset': 'utf8mb4',
             **DB_SSL_OPTIONS,
+            # PyMySQL specific - disable SSL verification
+            'ssl_verify_cert': False,
+            'ssl_verify_identity': False,
         },
     }
 }
