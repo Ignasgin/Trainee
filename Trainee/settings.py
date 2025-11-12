@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-rho1t()l=4_sgyww6is7=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if os.environ.get('ALLOWED_HOSTS') else []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if os.environ.get('ALLOWED_HOSTS') else ['*']
 
 
 # Application definition
@@ -76,19 +76,22 @@ WSGI_APPLICATION = 'Trainee.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# SSL certificate path for local development
+SSL_CA_PATH = os.path.join(BASE_DIR, 'BaltimoreCyberTrustRoot.crt.pem')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sql7802231',
-        'USER': 'sql7802230',
-        'PASSWORD': 'Mypassword1',
-        'HOST': 'sql7802231.mysql.database.azure.com',
-        'PORT': '3306',
+        'NAME': os.environ.get('DB_NAME', 'sql7802231'),
+        'USER': os.environ.get('DB_USER', 'sql7802230'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'Mypassword1'),
+        'HOST': os.environ.get('DB_HOST', 'sql7802231.mysql.database.azure.com'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
             'ssl': {
-                'ca': r'C:\Users\as\Desktop\Trainee\BaltimoreCyberTrustRoot.crt.pem',
-            },
+                'ca': SSL_CA_PATH,
+            } if os.path.exists(SSL_CA_PATH) else {},
         },
     }
 }

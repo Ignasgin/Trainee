@@ -1,13 +1,13 @@
 {
 	"info": {
-		"name": "Trainee API - Minimal Collection",
-		"description": "Minimal REST API collection with essential tests only - one test per endpoint and one per exception type",
+		"name": "Trainee API - Azure Deployed (LIVE)",
+		"description": "REST API collection for Azure hosted application at https://trainee-api.azurewebsites.net",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "http://localhost:8000",
+			"value": "https://trainee-api.azurewebsites.net",
 			"type": "string"
 		},
 		{
