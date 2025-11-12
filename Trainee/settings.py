@@ -27,10 +27,6 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if os.environ.get('ALLOWED_HOSTS') else ['*']
 
-# Disable APPEND_SLASH to prevent redirect loop on Azure
-# Azure Load Balancer causes CommonMiddleware to redirect infinitely
-APPEND_SLASH = False
-
 
 # Application definition
 
@@ -49,6 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'Trainee.middleware.AzureProxyMiddleware',  # Fix Azure redirect loop - MUST be early
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
