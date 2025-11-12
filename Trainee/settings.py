@@ -79,6 +79,14 @@ WSGI_APPLICATION = 'Trainee.wsgi.application'
 # SSL certificate path for local development
 SSL_CA_PATH = os.path.join(BASE_DIR, 'BaltimoreCyberTrustRoot.crt.pem')
 
+# Database SSL options
+if os.path.exists(SSL_CA_PATH):
+    # Local development with certificate file
+    DB_SSL_OPTIONS = {'ssl': {'ca': SSL_CA_PATH}}
+else:
+    # Azure production - use ssl_mode instead of certificate
+    DB_SSL_OPTIONS = {'ssl_mode': 'REQUIRED'}
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -89,9 +97,7 @@ DATABASES = {
         'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
-            'ssl': {
-                'ca': SSL_CA_PATH,
-            } if os.path.exists(SSL_CA_PATH) else {},
+            **DB_SSL_OPTIONS,
         },
     }
 }
