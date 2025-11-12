@@ -192,7 +192,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Azure App Service Configuration
-# Fix for redirect loop when behind Azure Load Balancer
-USE_X_FORWARDED_HOST = True
+# Azure App Service Configuration - Trust proxy headers
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = False  # Azure handles HTTPS redirect
