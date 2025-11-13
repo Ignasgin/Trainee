@@ -14,9 +14,16 @@ export default function Home() {
   const loadSections = async () => {
     try {
       const response = await getSections();
-      setSections(response.data);
+      // Ensure response.data is an array
+      if (Array.isArray(response.data)) {
+        setSections(response.data);
+      } else {
+        console.error('API response is not an array:', response.data);
+        setError('Invalid data format from server');
+      }
     } catch (err) {
-      setError('Failed to load sections');
+      console.error('Failed to load sections:', err);
+      setError(`Failed to load sections: ${err.response?.data?.detail || err.message}`);
     } finally {
       setLoading(false);
     }
