@@ -76,27 +76,9 @@ WSGI_APPLICATION = 'Trainee.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# SSL certificate paths
-BALTIMORE_CA_PATH = os.path.join(BASE_DIR, 'BaltimoreCyberTrustRoot.crt.pem')
-
-# Database SSL options
-if os.path.exists(BALTIMORE_CA_PATH):
-    # Local development with Baltimore certificate
-    DB_SSL_OPTIONS = {'ssl': {'ca': BALTIMORE_CA_PATH}}
-else:
-    # Azure production - SSL enabled without certificate verification
-    # Required for Azure MySQL Flexible Server student tier with self-signed certs
-    import ssl as ssl_module
-    DB_SSL_OPTIONS = {
-        'ssl': {
-            'check_hostname': False,
-            'verify_mode': ssl_module.CERT_NONE
-        }
-    }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'mysql.connector.django',  # MySQL Connector engine
         'NAME': os.environ.get('DB_NAME', 'sql7802231'),
         'USER': os.environ.get('DB_USER', 'sql7802230'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'Mypassword1'),
@@ -104,7 +86,10 @@ DATABASES = {
         'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
-            **DB_SSL_OPTIONS,
+            'use_pure': True,  # Use pure Python implementation
+            'ssl_disabled': False,  # Enable SSL
+            'ssl_verify_cert': False,  # Disable certificate verification
+            'ssl_verify_identity': False,  # Disable hostname verification
         },
     }
 }
