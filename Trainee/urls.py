@@ -1,8 +1,9 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenRefreshView
 from core.jwt_serializers import CustomTokenObtainPairView
+from core.frontend_views import index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -17,4 +18,9 @@ urlpatterns = [
     # OpenAPI UI
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+]
+
+# React frontend - catch all routes (must be last)
+urlpatterns += [
+    re_path(r'^', index, name='index'),
 ]
