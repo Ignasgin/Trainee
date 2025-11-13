@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_URL = 'https://trainee-api.azurewebsites.net/api';
+// Use relative URL so it works both locally and on Azure
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'https://trainee-api.azurewebsites.net/api'
+  : '/api';
 
 const api = axios.create({
   baseURL: API_URL,
