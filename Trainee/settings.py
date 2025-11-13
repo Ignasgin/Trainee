@@ -76,23 +76,46 @@ WSGI_APPLICATION = 'Trainee.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'mysql.connector.django',  # MySQL Connector engine
-        'NAME': os.environ.get('DB_NAME', 'sql7802231'),
-        'USER': os.environ.get('DB_USER', 'sql7802230'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'Mypassword1'),
-        'HOST': os.environ.get('DB_HOST', 'sql7802231.mysql.database.azure.com'),
-        'PORT': os.environ.get('DB_PORT', '3306'),
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'use_pure': True,  # Use pure Python implementation
-            'ssl_disabled': False,  # Enable SSL
-            'ssl_verify_cert': False,  # Disable certificate verification
-            'ssl_verify_identity': False,  # Disable hostname verification
-        },
+import os
+
+# Check if Baltimore certificate exists (local development)
+BALTIMORE_CA_PATH = os.path.join(BASE_DIR, 'BaltimoreCyberTrustRoot.crt.pem')
+
+if os.path.exists(BALTIMORE_CA_PATH):
+    # Local development - use mysqlclient with certificate
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get('DB_NAME', 'sql7802231'),
+            'USER': os.environ.get('DB_USER', 'sql7802230'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', 'Mypassword1'),
+            'HOST': os.environ.get('DB_HOST', 'sql7802231.mysql.database.azure.com'),
+            'PORT': os.environ.get('DB_PORT', '3306'),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'ssl': {'ca': BALTIMORE_CA_PATH}
+            },
+        }
     }
-}
+else:
+    # Azure production - use mysql-connector-python without verification
+    DATABASES = {
+        'default': {
+            'ENGINE': 'mysql.connector.django',
+            'NAME': os.environ.get('DB_NAME', 'sql7802231'),
+            'USER': os.environ.get('DB_USER', 'sql7802230'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', 'Mypassword1'),
+            'HOST': os.environ.get('DB_HOST', 'sql7802231.mysql.database.azure.com'),
+            'PORT': os.environ.get('DB_PORT', '3306'),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'use_pure': True,
+                'ssl_disabled': False,
+                'ssl_verify_cert': False,
+                'ssl_verify_identity': False,
+            },
+        }
+    }
 
 # REST Framework settings
 REST_FRAMEWORK = {

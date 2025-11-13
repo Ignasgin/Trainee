@@ -22,9 +22,15 @@ urlpatterns = [
     # User URLs
     path('users/', views.UserListView.as_view(), name='user-list'),
     path('users/<int:pk>/', views.UserDetailView.as_view(), name='user-detail'),
+    path('users/<int:pk>/posts/', views.UserPostsView.as_view(), name='user-posts'),
     path('users/register/', views.UserCreateView.as_view(), name='user-create'),
     path('users/profile/', views.UserUpdateView.as_view(), name='user-update'),
     path('users/<int:pk>/delete/', views.UserDeleteView.as_view(), name='user-delete'),
+    
+    # Admin URLs
+    path('admin/pending-users/', views.pending_users, name='admin-pending-users'),
+    path('admin/users/<int:pk>/approve/', views.approve_user, name='admin-approve-user'),
+    path('admin/pending-posts/', views.pending_posts, name='admin-pending-posts'),
     
     # Post URLs (flat access)
     path('posts/', views.PostListView.as_view(), name='post-list'),

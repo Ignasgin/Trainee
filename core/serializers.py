@@ -32,6 +32,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password')
         user = User.objects.create_user(**validated_data)
         user.set_password(password)
+        user.is_active = False  # Require admin approval
         user.save()
         return user
 

@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg, Count
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from .models import Post, Comment, Rating, Section
 from .serializers import UserSerializer, UserCreateSerializer, UserUpdateSerializer, PostSerializer, CommentSerializer, RatingSerializer, SectionSerializer
@@ -85,11 +86,65 @@ class UserUpdateView(generics.UpdateAPIView):
     def get_object(self):
         return self.request.user
 
-@extend_schema(tags=['Users', 'Admin'])
+@extend_schema(tags=['Users'])
 class UserDeleteView(generics.DestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAdminUser]
+
+@extend_schema(
+    tags=['Users'],
+    summary="Get user's posts",
+    description="Retrieve all posts created by a specific user"
+)
+class UserPostsView(generics.ListAPIView):
+    """Get all posts by a specific user"""
+    serializer_class = PostSerializer
+    permission_classes = [permissions.AllowAny]
+    
+    def get_queryset(self):
+        user_id = self.kwargs['pk']
+        # Show only approved public posts for non-authenticated users
+        if not self.request.user.is_authenticated:
+            return Post.objects.filter(user_id=user_id, is_public=True, is_approved=True)
+        # Show all public posts for authenticated users
+        return Post.objects.filter(user_id=user_id, is_public=True)
+
+@extend_schema(
+    tags=['Admin'],
+    summary="Get pending users (admin only)",
+    description="List all inactive users pending admin approval"
+)
+@api_view(['GET'])
+@permission_classes([permissions.IsAdminUser])
+def pending_users(request):
+    """Admin: get all inactive users waiting for approval"""
+    users = User.objects.filter(is_active=False)
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data)
+
+@extend_schema(
+    request=None,
+    responses={
+        200: UserSerializer,
+        404: OpenApiResponse(description='User not found'),
+    },
+    tags=['Admin'],
+    summary="Approve user (admin only)",
+    description="Activate a user account"
+)
+@api_view(['PUT'])
+@permission_classes([permissions.IsAdminUser])
+def approve_user(request, pk):
+    """Admin: approve/activate a user"""
+    try:
+        user = User.objects.get(pk=pk)
+        user.is_active = True
+        user.save()
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 # Post views
 @extend_schema(tags=['Posts'])
@@ -235,6 +290,19 @@ class PublicPostsView(generics.ListAPIView):
     
     def get_queryset(self):
         return Post.objects.filter(is_public=True, is_approved=True)
+
+@extend_schema(
+    tags=['Admin'],
+    summary="Get pending posts (admin only)",
+    description="List all public posts waiting for admin approval"
+)
+@api_view(['GET'])
+@permission_classes([permissions.IsAdminUser])
+def pending_posts(request):
+    """Admin: get all posts waiting for approval"""
+    posts = Post.objects.filter(is_public=True, is_approved=False)
+    serializer = PostSerializer(posts, many=True)
+    return Response(serializer.data)
 
 # Comment views
 @extend_schema(tags=['Comments'])
