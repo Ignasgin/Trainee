@@ -14,9 +14,14 @@ export default function Home() {
   const loadSections = async () => {
     try {
       const response = await getSections();
-      // Ensure response.data is an array
-      if (Array.isArray(response.data)) {
-        setSections(response.data);
+      console.log('API response:', response.data);
+      
+      // Handle paginated response
+      const data = response.data.results || response.data;
+      
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setSections(data);
       } else {
         console.error('API response is not an array:', response.data);
         setError('Invalid data format from server');
