@@ -19,6 +19,48 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Handle 401 errors and refresh token automatically
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // If 401 error and haven't tried to refresh yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      const refreshToken = sessionStorage.getItem('refreshToken');
+      if (refreshToken) {
+        try {
+          // Try to refresh the access token
+          const response = await axios.post(`${API_URL}/auth/refresh/`, {
+            refresh: refreshToken
+          });
+          
+          // Save new access token
+          const newAccessToken = response.data.access;
+          sessionStorage.setItem('token', newAccessToken);
+          
+          // Retry original request with new token
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          // Refresh failed - clear storage and redirect to login
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('refreshToken');
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // No refresh token - redirect to login
+        window.location.href = '/login';
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 // Auth
 export const login = (username, password) => 
   api.post('/auth/login/', { username, password });

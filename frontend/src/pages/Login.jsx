@@ -17,7 +17,7 @@ export default function Login() {
 
     try {
       const response = await apiLogin(formData.username, formData.password);
-      login(response.data.access);
+      login(response.data.access, response.data.refresh);
       navigate('/');
     } catch (err) {
       if (err.response?.status === 401) {

@@ -26,9 +26,10 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = (token) => {
-    sessionStorage.setItem('token', token);
-    const decoded = jwtDecode(token);
+  const login = (accessToken, refreshToken) => {
+    sessionStorage.setItem('token', accessToken);
+    sessionStorage.setItem('refreshToken', refreshToken);
+    const decoded = jwtDecode(accessToken);
     setUser({
       id: decoded.user_id,
       username: decoded.username,
@@ -39,6 +40,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     sessionStorage.removeItem('token');
+    sessionStorage.removeItem('refreshToken');
     setUser(null);
   };
 
