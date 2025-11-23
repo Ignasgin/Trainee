@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getSections } from '../services/api';
+import { HiOutlineCollection, HiArrowRight, HiRefresh } from 'react-icons/hi';
 
 export default function Home() {
   const [sections, setSections] = useState([]);
@@ -36,7 +37,8 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <HiRefresh className="w-12 h-12 text-primary animate-spin" />
         <div className="text-xl text-gray-600">Loading sections...</div>
       </div>
     );
@@ -51,12 +53,12 @@ export default function Home() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 animate-fade-in">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">
+        <h1 className="text-5xl font-bold text-gray-800 mb-4 tracking-tight">
           Welcome to Trainee
         </h1>
-        <p className="text-xl text-gray-600">
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           Your nutrition and workout planning platform
         </p>
       </div>
@@ -66,20 +68,31 @@ export default function Home() {
           <Link
             key={section.id}
             to={`/sections/${section.id}`}
-            className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-6 border-2 border-transparent hover:border-primary"
+            className="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border-2 border-transparent hover:border-primary hover:scale-105"
           >
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">
-              {section.name}
-            </h2>
-            <p className="text-gray-600 mb-4">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="p-3 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                <HiOutlineCollection className="w-8 h-8 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-primary transition-colors">
+                  {section.name}
+                </h2>
+              </div>
+            </div>
+            
+            <p className="text-gray-600 mb-4 line-clamp-3">
               {section.description}
             </p>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">
+            
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+              <span className="text-sm text-gray-500 flex items-center gap-2">
+                <HiOutlineCollection className="w-4 h-4" />
                 {section.post_count || 0} posts
               </span>
-              <span className="text-primary font-semibold">
-                View Posts →
+              <span className="text-primary font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
+                View Posts
+                <HiArrowRight className="w-5 h-5" />
               </span>
             </div>
           </Link>
@@ -88,6 +101,7 @@ export default function Home() {
 
       {sections.length === 0 && (
         <div className="text-center py-12">
+          <HiOutlineCollection className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-xl text-gray-500">No sections available</p>
         </div>
       )}
