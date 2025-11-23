@@ -23,8 +23,12 @@ urlpatterns = [
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
 
+# Serve static files (handled by Whitenoise middleware, but needs to be defined)
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
 # React frontend - catch all routes (must be last)
-# Whitenoise will handle /assets/ automatically via STATIC_URL
+# Important: exclude /assets/ from catch-all so Whitenoise can serve static files
 urlpatterns += [
-    re_path(r'^', index, name='index'),
+    re_path(r'^(?!assets/).*$', index, name='index'),
 ]
