@@ -45,12 +45,6 @@ export default function EditPost() {
       
       const post = postRes.data;
       
-      // Check if user owns this post
-      if (post.user?.id !== user?.id && !user?.is_staff) {
-        navigate('/');
-        return;
-      }
-      
       setFormData({
         title: post.title || '',
         description: post.description || '',

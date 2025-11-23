@@ -137,14 +137,14 @@ export default function Profile() {
                 key={post.id}
                 className="group bg-gray-50 hover:bg-white rounded-xl p-6 border-2 border-transparent hover:border-primary transition-all duration-300 shadow-sm hover:shadow-lg"
               >
-                <div className="flex flex-wrap justify-between items-start gap-4 mb-3">
+                <div className="flex justify-between items-start gap-4 mb-3">
                   <Link
                     to={`/posts/${post.id}`}
                     className="text-xl font-bold text-gray-800 hover:text-primary transition-colors flex-1"
                   >
                     {post.title}
                   </Link>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={(e) => handleEditPost(post.id, e)}
                       className="text-blue-500 hover:text-blue-700 hover:scale-110 transition-all p-2"
@@ -160,8 +160,9 @@ export default function Profile() {
                       <HiTrash className="w-5 h-5" />
                     </button>
                   </div>
+                </div>
                   
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mb-3">
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-2 ${
                       post.type === 'meal' 
                         ? 'bg-green-100 text-green-700' 
@@ -186,7 +187,6 @@ export default function Profile() {
                       </span>
                     )}
                   </div>
-                </div>
 
                 <p className="text-gray-600 mb-4 line-clamp-2">
                   {post.description}
