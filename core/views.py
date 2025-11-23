@@ -39,11 +39,8 @@ class SectionPostsView(generics.ListAPIView):
     
     def get_queryset(self):
         section_id = self.kwargs['section_id']
-        # Show only approved public posts for non-authenticated users
-        if not self.request.user.is_authenticated:
-            return Post.objects.filter(section_id=section_id, is_public=True, is_approved=True)
-        # Show all public posts for authenticated users
-        return Post.objects.filter(section_id=section_id, is_public=True)
+        # Show only approved public posts (for all users)
+        return Post.objects.filter(section_id=section_id, is_public=True, is_approved=True)
 
 # User views
 @extend_schema(tags=['Users'])
