@@ -139,13 +139,13 @@ export default function Home() {
       >
         <div className="space-y-6">
           {/* Hero Image Placeholder with responsive behavior */}
-          <div className="w-full overflow-hidden rounded-lg">
-            <img 
-              src="https://via.placeholder.com/800x400/10b981/ffffff?text=Trainee+Platform"
-              alt="Trainee Platform"
-              className="w-full h-auto max-w-full object-cover"
-              style={{ maxWidth: '100%' }}
-            />
+          <div className="w-full h-64 bg-gradient-to-br from-primary via-secondary to-accent rounded-lg flex items-center justify-center overflow-hidden">
+            <div className="text-center text-white p-8">
+              <HiOutlineCollection className="w-32 h-32 mx-auto mb-4 opacity-90" />
+              <h3 className="text-3xl font-bold mb-2">Trainee Platform</h3>
+              <p className="text-lg opacity-90">Responsive Image Demonstration</p>
+              <p className="text-sm opacity-75 mt-2">This container uses max-width: 100% and scales on smaller screens</p>
+            </div>
           </div>
 
           {/* Content */}
@@ -192,13 +192,18 @@ export default function Home() {
             {/* Example Responsive Image */}
             <div className="border-2 border-dashed border-primary/30 rounded-lg p-4 bg-primary/5">
               <p className="text-sm text-gray-600 font-semibold mb-3">📐 Example: Responsive Image Behavior</p>
-              <img 
-                src="https://via.placeholder.com/600x300/3b82f6/ffffff?text=Responsive+Image+Demo"
-                alt="Responsive demo"
-                className="w-full max-w-full h-auto rounded-lg shadow-md"
-              />
+              <div className="w-full h-48 bg-gradient-to-r from-secondary to-primary rounded-lg shadow-md flex items-center justify-center text-white">
+                <div className="text-center p-6">
+                  <div className="text-6xl mb-3">📱💻🖥️</div>
+                  <p className="text-xl font-bold mb-2">Responsive Layout</p>
+                  <p className="text-sm opacity-90">Adapts to any screen size</p>
+                  <code className="text-xs bg-white/20 px-3 py-1 rounded mt-3 inline-block">
+                    max-width: 100% | height: auto
+                  </code>
+                </div>
+              </div>
               <p className="text-xs text-gray-500 mt-2 text-center italic">
-                This image automatically scales down on smaller screens (max-width: 100%, height: auto)
+                This container automatically scales down on smaller screens (max-width: 100%, height: auto)
               </p>
             </div>
           </div>
