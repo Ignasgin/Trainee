@@ -30,10 +30,12 @@ export default function Profile() {
   const loadUserPosts = async () => {
     try {
       const response = await getUserPosts(user.id);
-      setPosts(response.data);
+      const data = response.data?.results || response.data;
+      setPosts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to load user posts:', err);
       setError('Failed to load your posts');
+      setPosts([]);
     } finally {
       setLoading(false);
     }

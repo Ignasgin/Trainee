@@ -34,10 +34,14 @@ export default function AdminPanel() {
         getPendingUsers(),
         getPendingPosts(),
       ]);
-      setPendingUsers(usersRes.data);
-      setPendingPosts(postsRes.data);
+      const usersData = usersRes.data?.results || usersRes.data;
+      const postsData = postsRes.data?.results || postsRes.data;
+      setPendingUsers(Array.isArray(usersData) ? usersData : []);
+      setPendingPosts(Array.isArray(postsData) ? postsData : []);
     } catch (err) {
       console.error('Failed to load admin data', err);
+      setPendingUsers([]);
+      setPendingPosts([]);
     } finally {
       setLoading(false);
     }

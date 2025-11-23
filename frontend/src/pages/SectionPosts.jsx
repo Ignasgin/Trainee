@@ -26,9 +26,11 @@ export default function SectionPosts() {
   const loadPosts = async () => {
     try {
       const response = await getSectionPosts(id);
-      setPosts(response.data);
+      const data = response.data?.results || response.data;
+      setPosts(Array.isArray(data) ? data : []);
     } catch (err) {
       setError('Failed to load posts');
+      setPosts([]);
     } finally {
       setLoading(false);
     }

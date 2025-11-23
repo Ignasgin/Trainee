@@ -39,10 +39,14 @@ export default function PostDetail() {
         getPostRatings(id),
       ]);
       setPost(postRes.data);
-      setComments(commentsRes.data);
-      setRatings(ratingsRes.data);
+      const commentsData = commentsRes.data?.results || commentsRes.data;
+      const ratingsData = ratingsRes.data?.results || ratingsRes.data;
+      setComments(Array.isArray(commentsData) ? commentsData : []);
+      setRatings(Array.isArray(ratingsData) ? ratingsData : []);
     } catch (err) {
       setError('Failed to load post');
+      setComments([]);
+      setRatings([]);
     } finally {
       setLoading(false);
     }
