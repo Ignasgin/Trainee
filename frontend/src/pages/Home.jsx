@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getSections } from '../services/api';
-import { HiOutlineCollection, HiArrowRight, HiRefresh } from 'react-icons/hi';
+import { useAuth } from '../context/AuthContext';
+import { HiOutlineCollection, HiArrowRight, HiRefresh, HiPlusCircle } from 'react-icons/hi';
 
 export default function Home() {
+  const { user } = useAuth();
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -58,9 +60,19 @@ export default function Home() {
         <h1 className="text-5xl font-bold text-gray-800 mb-4 tracking-tight">
           Welcome to Trainee
         </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
           Your nutrition and workout planning platform
         </p>
+        
+        {user && (
+          <Link
+            to="/posts/create"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 hover:scale-105 transition-all shadow-lg"
+          >
+            <HiPlusCircle className="w-6 h-6" />
+            Create New Post
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import SectionPosts from './pages/SectionPosts';
 import PostDetail from './pages/PostDetail';
 import AdminPanel from './pages/AdminPanel';
+import CreatePost from './pages/CreatePost';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/sections/:id" element={<SectionPosts />} />
               <Route path="/posts/:id" element={<PostDetail />} />
+              <Route path="/posts/create" element={<CreatePost />} />
               <Route path="/admin" element={<AdminPanel />} />
             </Routes>
           </main>
