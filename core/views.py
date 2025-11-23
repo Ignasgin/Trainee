@@ -104,11 +104,14 @@ class UserPostsView(generics.ListAPIView):
     
     def get_queryset(self):
         user_id = self.kwargs['pk']
+        # If viewing own profile, show ALL posts (including pending/private)
+        if self.request.user.is_authenticated and str(self.request.user.id) == str(user_id):
+            return Post.objects.filter(user_id=user_id)
         # Show only approved public posts for non-authenticated users
         if not self.request.user.is_authenticated:
             return Post.objects.filter(user_id=user_id, is_public=True, is_approved=True)
-        # Show all public posts for authenticated users
-        return Post.objects.filter(user_id=user_id, is_public=True)
+        # Show all approved public posts for other authenticated users
+        return Post.objects.filter(user_id=user_id, is_public=True, is_approved=True)
 
 @extend_schema(
     tags=['Admin'],
