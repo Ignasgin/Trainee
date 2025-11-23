@@ -235,7 +235,7 @@ export default function PostDetail() {
                     {new Date(comment.created_at).toLocaleDateString()}
                   </span>
                 </div>
-                {user?.is_staff && (
+                {user?.role === 'admin' && (
                   <button
                     onClick={() => handleDeleteComment(comment.id)}
                     className="text-red-500 hover:text-red-700 hover:scale-110 transition-all p-1"
