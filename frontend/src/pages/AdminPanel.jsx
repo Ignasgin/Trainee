@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getPendingUsers, getPendingPosts, approveUser, approvePost, deletePost } from '../services/api';
+import { getPendingUsers, getPendingPosts, approveUser, approvePost, deletePost, getAllPostsDebug } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { 
@@ -22,6 +22,7 @@ export default function AdminPanel() {
   const [pendingPosts, setPendingPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('users');
+  const [debugInfo, setDebugInfo] = useState(null);
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -31,16 +32,19 @@ export default function AdminPanel() {
 
   const loadData = async () => {
     try {
-      const [usersRes, postsRes] = await Promise.all([
+      const [usersRes, postsRes, debugRes] = await Promise.all([
         getPendingUsers(),
         getPendingPosts(),
+        getAllPostsDebug(),
       ]);
       console.log('Pending users response:', usersRes.data);
       console.log('Pending posts response:', postsRes.data);
+      console.log('Debug info:', debugRes.data);
       const usersData = usersRes.data?.results || usersRes.data;
       const postsData = postsRes.data?.results || postsRes.data;
       setPendingUsers(Array.isArray(usersData) ? usersData : []);
       setPendingPosts(Array.isArray(postsData) ? postsData : []);
+      setDebugInfo(debugRes.data);
       console.log('Pending posts count:', Array.isArray(postsData) ? postsData.length : 0);
     } catch (err) {
       console.error('Failed to load admin data', err);
@@ -99,6 +103,40 @@ export default function AdminPanel() {
         <h1 className="text-4xl font-bold text-gray-800">Admin Panel</h1>
       </div>
 
+      {/* Debug Info */}
+      {debugInfo && (
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-lg">
+          <h3 className="font-bold text-blue-900 mb-2">📊 System Status</h3>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+            <div>
+              <span className="text-blue-700">Total Posts:</span>
+              <span className="font-bold ml-2">{debugInfo.summary.total_posts}</span>
+            </div>
+            <div>
+              <span className="text-green-700">✓ Public + Approved:</span>
+              <span className="font-bold ml-2">{debugInfo.summary.public_approved}</span>
+            </div>
+            <div>
+              <span className="text-yellow-700">⏳ Public + Pending:</span>
+              <span className="font-bold ml-2">{debugInfo.summary.public_pending}</span>
+            </div>
+            <div>
+              <span className="text-orange-700">🔒 Private + Approved:</span>
+              <span className="font-bold ml-2">{debugInfo.summary.private_approved}</span>
+            </div>
+            <div>
+              <span className="text-red-700">❌ Private + Pending:</span>
+              <span className="font-bold ml-2">{debugInfo.summary.private_pending}</span>
+            </div>
+          </div>
+          {debugInfo.summary.private_pending > 0 && (
+            <p className="text-red-700 text-sm mt-2">
+              ⚠️ Warning: {debugInfo.summary.private_pending} post(s) are private and unapproved (hidden from all)
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="flex gap-2 mb-6 border-b bg-white rounded-t-xl shadow-md">
         <button
@@ -122,6 +160,16 @@ export default function AdminPanel() {
         >
           <HiDocumentText className="w-5 h-5" />
           Pending Posts ({pendingPosts.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('debug')}
+          className={`px-6 py-4 font-semibold transition-all flex items-center gap-2 rounded-t-xl ${
+            activeTab === 'debug'
+              ? 'border-b-2 border-primary text-primary bg-primary/5'
+              : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+          }`}
+        >
+          🔍 Debug
         </button>
       </div>
 
@@ -250,6 +298,91 @@ export default function AdminPanel() {
               <p className="text-gray-500 text-lg">No pending posts</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Debug Tab */}
+      {activeTab === 'debug' && debugInfo && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100">
+            <h3 className="text-2xl font-bold mb-4">🔍 All Posts</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left">ID</th>
+                    <th className="px-4 py-2 text-left">Title</th>
+                    <th className="px-4 py-2 text-left">Author</th>
+                    <th className="px-4 py-2 text-left">Type</th>
+                    <th className="px-4 py-2 text-left">Public</th>
+                    <th className="px-4 py-2 text-left">Approved</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {debugInfo.posts.map((post) => (
+                    <tr key={post.id} className="border-t hover:bg-gray-50">
+                      <td className="px-4 py-2">{post.id}</td>
+                      <td className="px-4 py-2">{post.title}</td>
+                      <td className="px-4 py-2">
+                        <a href={`/profile`} className="text-blue-600 hover:underline">
+                          {post.author} (ID: {post.author_id})
+                        </a>
+                      </td>
+                      <td className="px-4 py-2">{post.type}</td>
+                      <td className="px-4 py-2">
+                        <span className={`px-2 py-1 rounded text-xs ${post.is_public ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          {post.is_public ? '✓ Public' : '✗ Private'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2">
+                        <span className={`px-2 py-1 rounded text-xs ${post.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          {post.is_approved ? '✓ Approved' : '⏳ Pending'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100">
+            <h3 className="text-2xl font-bold mb-4">👥 All Users</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left">ID</th>
+                    <th className="px-4 py-2 text-left">Username</th>
+                    <th className="px-4 py-2 text-left">Email</th>
+                    <th className="px-4 py-2 text-left">Status</th>
+                    <th className="px-4 py-2 text-left">Role</th>
+                    <th className="px-4 py-2 text-left">Posts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {debugInfo.users.map((user) => (
+                    <tr key={user.id} className="border-t hover:bg-gray-50">
+                      <td className="px-4 py-2">{user.id}</td>
+                      <td className="px-4 py-2">{user.username}</td>
+                      <td className="px-4 py-2">{user.email}</td>
+                      <td className="px-4 py-2">
+                        <span className={`px-2 py-1 rounded text-xs ${user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          {user.is_active ? '✓ Active' : '✗ Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2">
+                        <span className={`px-2 py-1 rounded text-xs ${user.is_staff ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
+                          {user.is_staff ? '👑 Admin' : 'User'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2">{user.post_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -122,4 +122,7 @@ export const approveUser = (userId) =>
 export const getPendingPosts = () => 
   api.get('/admin/pending-posts/');
 
+export const getAllPostsDebug = () =>
+  api.get('/admin/debug/all-posts/');
+
 export default api;
