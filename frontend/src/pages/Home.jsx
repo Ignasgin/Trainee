@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getSections } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { HiOutlineCollection, HiArrowRight, HiRefresh, HiPlusCircle } from 'react-icons/hi';
+import { HiOutlineCollection, HiArrowRight, HiRefresh, HiPlusCircle, HiInformationCircle } from 'react-icons/hi';
+import Modal from '../components/Modal';
 
 export default function Home() {
   const { user } = useAuth();
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   useEffect(() => {
     loadSections();
@@ -64,15 +66,25 @@ export default function Home() {
           Your nutrition and workout planning platform
         </p>
         
-        {user && (
-          <Link
-            to="/posts/create"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 hover:scale-105 transition-all shadow-lg"
+        <div className="flex items-center justify-center gap-4 flex-wrap">
+          {user && (
+            <Link
+              to="/posts/create"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 hover:scale-105 transition-all shadow-lg"
+            >
+              <HiPlusCircle className="w-6 h-6" />
+              Create New Post
+            </Link>
+          )}
+          
+          <button
+            onClick={() => setShowInfoModal(true)}
+            className="inline-flex items-center gap-2 bg-white text-primary border-2 border-primary px-6 py-3 rounded-lg font-semibold hover:bg-primary hover:text-white hover:scale-105 transition-all shadow-lg"
           >
-            <HiPlusCircle className="w-6 h-6" />
-            Create New Post
-          </Link>
-        )}
+            <HiInformationCircle className="w-6 h-6" />
+            About Platform
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -117,6 +129,81 @@ export default function Home() {
           <p className="text-xl text-gray-500">No sections available</p>
         </div>
       )}
+
+      {/* Info Modal */}
+      <Modal
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+        title="About Trainee Platform"
+        size="xl"
+      >
+        <div className="space-y-6">
+          {/* Hero Image Placeholder with responsive behavior */}
+          <div className="w-full overflow-hidden rounded-lg">
+            <img 
+              src="https://via.placeholder.com/800x400/10b981/ffffff?text=Trainee+Platform"
+              alt="Trainee Platform"
+              className="w-full h-auto max-w-full object-cover"
+              style={{ maxWidth: '100%' }}
+            />
+          </div>
+
+          {/* Content */}
+          <div className="space-y-4">
+            <h4 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              🎯 Mission
+            </h4>
+            <p className="text-gray-600">
+              Trainee helps users improve their lifestyle by creating, sharing, and using nutrition and workout plans. 
+              Build personalized routines, track calories, get recommendations, and engage with a healthy living community.
+            </p>
+
+            <h4 className="text-xl font-bold text-gray-800 flex items-center gap-2 mt-6">
+              ✨ Key Features
+            </h4>
+            <ul className="space-y-2 text-gray-600">
+              <li className="flex items-start gap-2">
+                <span className="text-primary font-bold">•</span>
+                Create and share meal plans and workout routines
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary font-bold">•</span>
+                Track calories and get personalized recommendations
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary font-bold">•</span>
+                Comment and rate community posts (1-5 stars)
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary font-bold">•</span>
+                Moderated content for quality assurance
+              </li>
+            </ul>
+
+            <h4 className="text-xl font-bold text-gray-800 flex items-center gap-2 mt-6">
+              📱 Responsive Design
+            </h4>
+            <p className="text-gray-600">
+              Our platform is fully responsive and works seamlessly on desktop, tablet, and mobile devices. 
+              All images use <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">max-width: 100%</code> to ensure 
+              they adapt to any screen size without overflowing their containers.
+            </p>
+
+            {/* Example Responsive Image */}
+            <div className="border-2 border-dashed border-primary/30 rounded-lg p-4 bg-primary/5">
+              <p className="text-sm text-gray-600 font-semibold mb-3">📐 Example: Responsive Image Behavior</p>
+              <img 
+                src="https://via.placeholder.com/600x300/3b82f6/ffffff?text=Responsive+Image+Demo"
+                alt="Responsive demo"
+                className="w-full max-w-full h-auto rounded-lg shadow-md"
+              />
+              <p className="text-xs text-gray-500 mt-2 text-center italic">
+                This image automatically scales down on smaller screens (max-width: 100%, height: auto)
+              </p>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

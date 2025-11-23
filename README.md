@@ -91,14 +91,73 @@ Administratorius galės:
 
 - ✅ **Responsive Design** - Pilnai pritaikyta mobiliems įrenginiams (<768px breakpoint)
 - ✅ **Hamburger Menu** - Mobile slide-in navigation su animacijomis
-- ✅ **Vector Icons** - React Icons visoje aplikacijoje
-- ✅ **Animations** - Fade-in, scale-in, hover effects su Tailwind
-- ✅ **Modal Components** - Reusable modal sistema
+- ✅ **Vector Icons** - React Icons visoje aplikacijoje (Hero Icons, Game Icons)
+- ✅ **Animations** - Fade-in, scale-in, hover effects su Tailwind custom keyframes
+- ✅ **Modal Components** - Reusable modal sistema su backdrop blur
+- ✅ **Responsive Images** - max-width: 100%, height: auto behavior
 - ✅ **Form Validation** - Real-time validation UI su ikonais
 - ✅ **Loading States** - Spinner animacijos su ikonais
 - ✅ **Gradient Themes** - Primary (green) → Secondary (blue) gradients
 - ✅ **Consistent Spacing** - Grid alignment su gap-4, gap-6
 - ✅ **Google Fonts** - Inter font family (300-900 weights)
+
+### UI Wireframes
+
+#### Desktop Layout (>768px)
+```
+┌─────────────────────────────────────────────────────────┐
+│ Header (gradient green→blue)                            │
+│ Logo | Home | Profile | Admin | Logout                  │
+└─────────────────────────────────────────────────────────┘
+│                                                           │
+│  Content Area (white background)                         │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐                   │
+│  │ Card 1  │ │ Card 2  │ │ Card 3  │  (3-column grid)  │
+│  │ Icon    │ │ Icon    │ │ Icon    │                   │
+│  └─────────┘ └─────────┘ └─────────┘                   │
+│                                                           │
+└─────────────────────────────────────────────────────────┘
+│ Footer (dark gray gradient)                              │
+│ Made with ❤️ | © 2025 | About | Contact | Privacy       │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### Mobile Layout (<768px)
+```
+┌──────────────────┐
+│ Header           │
+│ Logo    [☰]     │
+└──────────────────┘
+│ Content          │
+│ ┌──────────────┐ │
+│ │ Card 1       │ │
+│ │ Full width   │ │
+│ └──────────────┘ │
+│ ┌──────────────┐ │
+│ │ Card 2       │ │
+│ └──────────────┘ │
+└──────────────────┘
+│ Footer           │
+└──────────────────┘
+
+[☰] → Slide-in Menu
+┌──────────────┐
+│ [X]          │
+│ Home         │
+│ Profile      │
+│ Logout       │
+└──────────────┘
+```
+
+### UI Elements Breakdown
+
+| Area | Desktop | Mobile | Elements |
+|------|---------|--------|----------|
+| **Header** | Horizontal nav | Hamburger menu | Logo, nav links, gradient background |
+| **Content** | 3-column grid | 1-column stack | Cards with icons, hover effects |
+| **Footer** | 3-section layout | Stacked | Social links, copyright, animated heart |
+| **Forms** | Side-by-side | Stacked | Text inputs, textareas, selects, checkboxes |
+| **Modals** | Centered overlay | Full-width padding | Backdrop blur, close button, responsive images |
 
 ## 🚀 Setup Instructions
 
