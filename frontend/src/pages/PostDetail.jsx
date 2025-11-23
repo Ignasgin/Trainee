@@ -221,7 +221,7 @@ export default function PostDetail() {
                   {new Date(comment.created_at).toLocaleDateString()}
                 </span>
               </div>
-              <p className="text-gray-700 ml-6">{comment.content}</p>
+              <p className="text-gray-700 ml-6">{comment.text}</p>
             </div>
           ))}
         </div>

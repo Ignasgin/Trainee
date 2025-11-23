@@ -94,11 +94,10 @@ class PostSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     author_username = serializers.CharField(source='user.username', read_only=True)
-    content = serializers.CharField(source='text', required=False)
     
     class Meta:
         model = Comment
-        fields = ['id', 'post', 'user', 'author_username', 'text', 'content', 'created_at']
+        fields = ['id', 'post', 'user', 'author_username', 'text', 'created_at']
         read_only_fields = ['id', 'user', 'created_at', 'post']  # post read-only nes nustatomas per URL
     
     def validate_text(self, value):
