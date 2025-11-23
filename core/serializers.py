@@ -53,10 +53,11 @@ class PostSerializer(serializers.ModelSerializer):
     )
     average_rating = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
+    author_username = serializers.CharField(source='user.username', read_only=True)
     
     class Meta:
         model = Post
-        fields = ['id', 'section', 'section_id', 'user', 'title', 'type', 'description', 'is_public', 'is_approved', 
+        fields = ['id', 'section', 'section_id', 'user', 'author_username', 'title', 'type', 'description', 'is_public', 'is_approved', 
                  'calories', 'recommendations', 'created_at', 'updated_at', 'average_rating', 'comment_count']
         read_only_fields = ['id', 'user', 'created_at', 'updated_at', 'is_approved']
     
@@ -92,10 +93,12 @@ class PostSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    author_username = serializers.CharField(source='user.username', read_only=True)
+    content = serializers.CharField(source='text', required=False)
     
     class Meta:
         model = Comment
-        fields = ['id', 'post', 'user', 'text', 'created_at']
+        fields = ['id', 'post', 'user', 'author_username', 'text', 'content', 'created_at']
         read_only_fields = ['id', 'user', 'created_at', 'post']  # post read-only nes nustatomas per URL
     
     def validate_text(self, value):

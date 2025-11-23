@@ -95,8 +95,8 @@ export const approvePost = (postId) =>
 export const getPostComments = (postId) => 
   api.get(`/posts/${postId}/comments/`);
 
-export const createComment = (postId, content) => 
-  api.post(`/posts/${postId}/comments/create/`, { content });
+export const createComment = (postId, text) => 
+  api.post(`/posts/${postId}/comments/create/`, { text });
 
 export const deleteComment = (commentId) => 
   api.delete(`/comments/${commentId}/delete/`);
@@ -105,8 +105,8 @@ export const deleteComment = (commentId) =>
 export const getPostRatings = (postId) => 
   api.get(`/posts/${postId}/ratings/`);
 
-export const createRating = (postId, value) => 
-  api.post(`/posts/${postId}/ratings/create/`, { value });
+export const createRating = (postId, rating) => 
+  api.post(`/posts/${postId}/ratings/create/`, { rating });
 
 // Users
 export const getUserPosts = (userId) => 
