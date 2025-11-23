@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getPost, getPostComments, getPostRatings, createComment, createRating } from '../services/api';
+import { getPost, getPostComments, getPostRatings, createComment, createRating, deleteComment } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { 
   HiArrowLeft, 
@@ -11,7 +11,8 @@ import {
   HiChatAlt, 
   HiLightBulb,
   HiPencilAlt,
-  HiExclamationCircle 
+  HiExclamationCircle,
+  HiTrash
 } from 'react-icons/hi';
 import { GiMeal, GiWeightLiftingUp } from 'react-icons/gi';
 
@@ -72,6 +73,18 @@ export default function PostDetail() {
       loadPostData();
     } catch (err) {
       alert('Failed to submit rating');
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+    
+    try {
+      await deleteComment(commentId);
+      loadPostData();
+    } catch (err) {
+      console.error('Failed to delete comment:', err);
+      alert('Failed to delete comment');
     }
   };
 
@@ -213,13 +226,24 @@ export default function PostDetail() {
           {comments.map((comment) => (
             <div key={comment.id} className="border-b border-gray-200 pb-4 last:border-0 hover:bg-gray-50 p-4 rounded-lg transition-colors">
               <div className="flex justify-between items-start mb-2">
-                <span className="font-semibold text-gray-800 flex items-center gap-2">
-                  <HiUser className="w-4 h-4 text-primary" />
-                  {comment.author_username}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {new Date(comment.created_at).toLocaleDateString()}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-800 flex items-center gap-2">
+                    <HiUser className="w-4 h-4 text-primary" />
+                    {comment.author_username}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {new Date(comment.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                {user?.is_staff && (
+                  <button
+                    onClick={() => handleDeleteComment(comment.id)}
+                    className="text-red-500 hover:text-red-700 hover:scale-110 transition-all p-1"
+                    title="Delete comment"
+                  >
+                    <HiTrash className="w-4 h-4" />
+                  </button>
+                )}
               </div>
               <p className="text-gray-700 ml-6">{comment.text}</p>
             </div>
