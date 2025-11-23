@@ -63,16 +63,16 @@ class PostSerializer(serializers.ModelSerializer):
     
     def validate_title(self, value):
         if not value or len(value.strip()) == 0:
-            raise serializers.ValidationError("Title cannot be empty")
+            raise serializers.ValidationError("Title cannot be empty.")
         if len(value) < 3:
-            raise serializers.ValidationError("Title must be at least 3 characters long")
+            raise serializers.ValidationError(f"Title must be at least 3 characters long. Current length: {len(value)}.")
         return value
     
     def validate_description(self, value):
         if not value or len(value.strip()) == 0:
-            raise serializers.ValidationError("Description cannot be empty")
+            raise serializers.ValidationError("Description cannot be empty.")
         if len(value) < 10:
-            raise serializers.ValidationError("Description must be at least 10 characters long")
+            raise serializers.ValidationError(f"Description must be at least 10 characters long. Current length: {len(value)}.")
         return value
     
     def validate_calories(self, value):

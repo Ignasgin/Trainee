@@ -56,20 +56,42 @@ export default function CreatePost() {
 
     try {
       const postData = {
-        ...formData,
-        section_id: formData.section,  // Backend expects section_id
+        title: formData.title,
+        description: formData.description,
+        type: formData.type,
+        section_id: formData.section,
+        is_public: true,  // Make post public by default
         calories: formData.calories ? parseInt(formData.calories) : null,
+        recommendations: formData.recommendations || '',
       };
-      delete postData.section;  // Remove section field
       await createPost(postData);
       setSuccess(true);
       setTimeout(() => navigate('/'), 2000);
     } catch (err) {
+      console.error('Create post error:', err.response?.data);
       if (err.response?.data) {
-        const errors = Object.entries(err.response.data)
-          .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
-          .join('\n');
-        setError(errors);
+        // Handle different error formats
+        let errorMessage = '';
+        const errorData = err.response.data;
+        
+        if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (typeof errorData === 'object') {
+          // Field-specific errors
+          errorMessage = Object.entries(errorData)
+            .map(([field, messages]) => {
+              const fieldName = field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ');
+              const errorMsg = Array.isArray(messages) ? messages.join(', ') : messages;
+              return `${fieldName}: ${errorMsg}`;
+            })
+            .join('\n');
+        } else {
+          errorMessage = String(errorData);
+        }
+        
+        setError(errorMessage || 'Failed to create post. Please check your input.');
       } else {
         setError('Failed to create post. Please try again.');
       }
