@@ -9,6 +9,7 @@ import SectionPosts from './pages/SectionPosts';
 import PostDetail from './pages/PostDetail';
 import AdminPanel from './pages/AdminPanel';
 import CreatePost from './pages/CreatePost';
+import EditPost from './pages/EditPost';
 import Profile from './pages/Profile';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
               <Route path="/sections/:id" element={<SectionPosts />} />
               <Route path="/posts/:id" element={<PostDetail />} />
               <Route path="/posts/create" element={<CreatePost />} />
+              <Route path="/posts/:id/edit" element={<EditPost />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<AdminPanel />} />
             </Routes>

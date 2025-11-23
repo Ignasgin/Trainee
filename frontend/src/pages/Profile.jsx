@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { getUserPosts, deletePost } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -12,12 +12,14 @@ import {
   HiStar,
   HiChatAlt,
   HiPlusCircle,
-  HiTrash
+  HiTrash,
+  HiPencil
 } from 'react-icons/hi';
 import { GiMeal, GiWeightLiftingUp } from 'react-icons/gi';
 
 export default function Profile() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -40,6 +42,12 @@ export default function Profile() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditPost = (postId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/posts/${postId}/edit`);
   };
 
   const handleDeletePost = async (postId, e) => {
@@ -136,13 +144,22 @@ export default function Profile() {
                   >
                     {post.title}
                   </Link>
-                  <button
-                    onClick={(e) => handleDeletePost(post.id, e)}
-                    className="text-red-500 hover:text-red-700 hover:scale-110 transition-all p-2"
-                    title="Delete post"
-                  >
-                    <HiTrash className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => handleEditPost(post.id, e)}
+                      className="text-blue-500 hover:text-blue-700 hover:scale-110 transition-all p-2"
+                      title="Edit post"
+                    >
+                      <HiPencil className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={(e) => handleDeletePost(post.id, e)}
+                      className="text-red-500 hover:text-red-700 hover:scale-110 transition-all p-2"
+                      title="Delete post"
+                    >
+                      <HiTrash className="w-5 h-5" />
+                    </button>
+                  </div>
                   
                   <div className="flex items-center gap-3">
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-2 ${
