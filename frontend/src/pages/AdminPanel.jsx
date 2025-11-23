@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getPendingUsers, getPendingPosts, approveUser, approvePost, deletePost, getAllPostsDebug } from '../services/api';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { 
@@ -12,7 +13,8 @@ import {
   HiMail,
   HiCalendar,
   HiFire,
-  HiXCircle
+  HiXCircle,
+  HiTrash
 } from 'react-icons/hi';
 import { GiMeal, GiWeightLiftingUp } from 'react-icons/gi';
 
@@ -80,6 +82,31 @@ export default function AdminPanel() {
       loadData();
     } catch (err) {
       alert('Failed to reject post');
+    }
+  };
+
+  const handleDebugDeletePost = async (postId, postTitle) => {
+    if (!confirm(`Delete post: "${postTitle}"?\n\nThis action cannot be undone.`)) return;
+    try {
+      await deletePost(postId);
+      loadData();
+    } catch (err) {
+      console.error('Failed to delete post:', err);
+      alert('Failed to delete post');
+    }
+  };
+
+  const handleDebugDeleteUser = async (userId, username) => {
+    if (!confirm(`Delete user: "${username}"?\n\nThis will delete the user and all their posts!\n\nThis action cannot be undone.`)) return;
+    try {
+      const token = sessionStorage.getItem('token');
+      await axios.delete(`/api/users/${userId}/delete/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      loadData();
+    } catch (err) {
+      console.error('Failed to delete user:', err);
+      alert('Failed to delete user');
     }
   };
 
@@ -316,6 +343,7 @@ export default function AdminPanel() {
                     <th className="px-4 py-2 text-left">Type</th>
                     <th className="px-4 py-2 text-left">Public</th>
                     <th className="px-4 py-2 text-left">Approved</th>
+                    <th className="px-4 py-2 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -339,6 +367,15 @@ export default function AdminPanel() {
                           {post.is_approved ? '✓ Approved' : '⏳ Pending'}
                         </span>
                       </td>
+                      <td className="px-4 py-2">
+                        <button
+                          onClick={() => handleDebugDeletePost(post.id, post.title)}
+                          className="text-red-500 hover:text-red-700 hover:scale-110 transition-all p-2"
+                          title="Delete post"
+                        >
+                          <HiTrash className="w-5 h-5" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -358,6 +395,7 @@ export default function AdminPanel() {
                     <th className="px-4 py-2 text-left">Status</th>
                     <th className="px-4 py-2 text-left">Role</th>
                     <th className="px-4 py-2 text-left">Posts</th>
+                    <th className="px-4 py-2 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -377,6 +415,15 @@ export default function AdminPanel() {
                         </span>
                       </td>
                       <td className="px-4 py-2">{user.post_count}</td>
+                      <td className="px-4 py-2">
+                        <button
+                          onClick={() => handleDebugDeleteUser(user.id, user.username)}
+                          className="text-red-500 hover:text-red-700 hover:scale-110 transition-all p-2"
+                          title="Delete user and all their posts"
+                        >
+                          <HiTrash className="w-5 h-5" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
