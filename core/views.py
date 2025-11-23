@@ -304,6 +304,56 @@ def pending_posts(request):
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
 
+@extend_schema(
+    tags=['Admin'],
+    summary="Get all posts with status (admin only)",
+    description="Debug endpoint to see all posts and their visibility status"
+)
+@api_view(['GET'])
+@permission_classes([permissions.IsAdminUser])
+def all_posts_debug(request):
+    """Admin: get ALL posts with full status info"""
+    from django.contrib.auth.models import User
+    
+    posts = Post.objects.all().order_by('-created_at')
+    
+    posts_data = []
+    for post in posts:
+        posts_data.append({
+            'id': post.id,
+            'title': post.title,
+            'type': post.type,
+            'is_public': post.is_public,
+            'is_approved': post.is_approved,
+            'author': post.user.username,
+            'author_id': post.user.id,
+            'created_at': post.created_at,
+        })
+    
+    users = User.objects.all().order_by('username')
+    users_data = []
+    for user in users:
+        users_data.append({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'is_active': user.is_active,
+            'is_staff': user.is_staff,
+            'post_count': Post.objects.filter(user=user).count(),
+        })
+    
+    return Response({
+        'posts': posts_data,
+        'users': users_data,
+        'summary': {
+            'total_posts': posts.count(),
+            'public_approved': posts.filter(is_public=True, is_approved=True).count(),
+            'public_pending': posts.filter(is_public=True, is_approved=False).count(),
+            'private_approved': posts.filter(is_public=False, is_approved=True).count(),
+            'private_pending': posts.filter(is_public=False, is_approved=False).count(),
+        }
+    })
+
 # Comment views
 @extend_schema(tags=['Comments'])
 class CommentListView(generics.ListAPIView):

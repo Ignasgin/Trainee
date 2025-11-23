@@ -31,6 +31,7 @@ urlpatterns = [
     path('admin/pending-users/', views.pending_users, name='admin-pending-users'),
     path('admin/users/<int:pk>/approve/', views.approve_user, name='admin-approve-user'),
     path('admin/pending-posts/', views.pending_posts, name='admin-pending-posts'),
+    path('admin/debug/all-posts/', views.all_posts_debug, name='admin-debug-posts'),
     
     # Post URLs (flat access)
     path('posts/', views.PostListView.as_view(), name='post-list'),
