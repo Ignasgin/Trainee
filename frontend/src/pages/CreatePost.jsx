@@ -57,8 +57,10 @@ export default function CreatePost() {
     try {
       const postData = {
         ...formData,
+        section_id: formData.section,  // Backend expects section_id
         calories: formData.calories ? parseInt(formData.calories) : null,
       };
+      delete postData.section;  // Remove section field
       await createPost(postData);
       setSuccess(true);
       setTimeout(() => navigate('/'), 2000);
