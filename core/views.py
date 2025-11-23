@@ -299,8 +299,8 @@ class PublicPostsView(generics.ListAPIView):
 @api_view(['GET'])
 @permission_classes([permissions.IsAdminUser])
 def pending_posts(request):
-    """Admin: get all posts waiting for approval"""
-    posts = Post.objects.filter(is_public=True, is_approved=False)
+    """Admin: get all posts waiting for approval (both public and private)"""
+    posts = Post.objects.filter(is_approved=False)
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
 
