@@ -139,12 +139,12 @@ export default function Home() {
       >
         <div className="space-y-6">
           {/* Hero Image Placeholder with responsive behavior */}
-          <div className="w-full h-64 bg-gradient-to-br from-primary via-secondary to-accent rounded-lg flex items-center justify-center overflow-hidden">
-            <div className="text-center text-white p-8">
-              <HiOutlineCollection className="w-32 h-32 mx-auto mb-4 opacity-90" />
-              <h3 className="text-3xl font-bold mb-2">Trainee Platform</h3>
-              <p className="text-lg opacity-90">Responsive Image Demonstration</p>
-              <p className="text-sm opacity-75 mt-2">This container uses max-width: 100% and scales on smaller screens</p>
+          <div className="w-full max-w-full h-48 sm:h-56 md:h-64 bg-gradient-to-br from-primary via-secondary to-accent rounded-lg flex items-center justify-center overflow-hidden">
+            <div className="text-center text-white p-4 sm:p-6 md:p-8">
+              <HiOutlineCollection className="w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 mx-auto mb-2 sm:mb-3 md:mb-4 opacity-90" />
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Trainee Platform</h3>
+              <p className="text-sm sm:text-base md:text-lg opacity-90">Responsive Demo</p>
+              <p className="text-xs sm:text-sm opacity-75 mt-1 sm:mt-2 hidden sm:block">Scales on all screen sizes</p>
             </div>
           </div>
 
@@ -190,20 +190,20 @@ export default function Home() {
             </p>
 
             {/* Example Responsive Image */}
-            <div className="border-2 border-dashed border-primary/30 rounded-lg p-4 bg-primary/5">
-              <p className="text-sm text-gray-600 font-semibold mb-3">📐 Example: Responsive Image Behavior</p>
-              <div className="w-full h-48 bg-gradient-to-r from-secondary to-primary rounded-lg shadow-md flex items-center justify-center text-white">
-                <div className="text-center p-6">
-                  <div className="text-6xl mb-3">📱💻🖥️</div>
-                  <p className="text-xl font-bold mb-2">Responsive Layout</p>
-                  <p className="text-sm opacity-90">Adapts to any screen size</p>
-                  <code className="text-xs bg-white/20 px-3 py-1 rounded mt-3 inline-block">
-                    max-width: 100% | height: auto
+            <div className="border-2 border-dashed border-primary/30 rounded-lg p-3 sm:p-4 bg-primary/5">
+              <p className="text-xs sm:text-sm text-gray-600 font-semibold mb-2 sm:mb-3">📐 Responsive Layout Example</p>
+              <div className="w-full max-w-full h-32 sm:h-40 md:h-48 bg-gradient-to-r from-secondary to-primary rounded-lg shadow-md flex items-center justify-center text-white overflow-hidden">
+                <div className="text-center p-3 sm:p-4 md:p-6">
+                  <div className="text-3xl sm:text-4xl md:text-6xl mb-2 sm:mb-3">📱💻🖥️</div>
+                  <p className="text-sm sm:text-lg md:text-xl font-bold mb-1 sm:mb-2">Responsive Layout</p>
+                  <p className="text-xs sm:text-sm opacity-90 hidden sm:block">Adapts to any screen</p>
+                  <code className="text-xs bg-white/20 px-2 py-1 rounded mt-2 inline-block">
+                    max-width: 100%
                   </code>
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-2 text-center italic">
-                This container automatically scales down on smaller screens (max-width: 100%, height: auto)
+                Automatically scales on smaller screens
               </p>
             </div>
           </div>
