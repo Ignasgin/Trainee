@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { getUserPosts } from '../services/api';
+import { getUserPosts, deletePost } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { 
   HiUser, 
@@ -11,7 +11,8 @@ import {
   HiFire,
   HiStar,
   HiChatAlt,
-  HiPlusCircle
+  HiPlusCircle,
+  HiTrash
 } from 'react-icons/hi';
 import { GiMeal, GiWeightLiftingUp } from 'react-icons/gi';
 
@@ -38,6 +39,20 @@ export default function Profile() {
       setPosts([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeletePost = async (postId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this post?')) return;
+    
+    try {
+      await deletePost(postId);
+      loadUserPosts();
+    } catch (err) {
+      console.error('Failed to delete post:', err);
+      alert('Failed to delete post');
     }
   };
 
@@ -110,15 +125,24 @@ export default function Profile() {
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {posts.map((post) => (
-              <Link
+              <div
                 key={post.id}
-                to={`/posts/${post.id}`}
                 className="group bg-gray-50 hover:bg-white rounded-xl p-6 border-2 border-transparent hover:border-primary transition-all duration-300 shadow-sm hover:shadow-lg"
               >
                 <div className="flex flex-wrap justify-between items-start gap-4 mb-3">
-                  <h3 className="text-xl font-bold text-gray-800 group-hover:text-primary transition-colors flex-1">
+                  <Link
+                    to={`/posts/${post.id}`}
+                    className="text-xl font-bold text-gray-800 hover:text-primary transition-colors flex-1"
+                  >
                     {post.title}
-                  </h3>
+                  </Link>
+                  <button
+                    onClick={(e) => handleDeletePost(post.id, e)}
+                    className="text-red-500 hover:text-red-700 hover:scale-110 transition-all p-2"
+                    title="Delete post"
+                  >
+                    <HiTrash className="w-5 h-5" />
+                  </button>
                   
                   <div className="flex items-center gap-3">
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-2 ${
@@ -167,7 +191,7 @@ export default function Profile() {
                     {post.comment_count || 0}
                   </span>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getPendingUsers, getPendingPosts, approveUser, approvePost } from '../services/api';
+import { getPendingUsers, getPendingPosts, approveUser, approvePost, deletePost } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { 
@@ -11,7 +11,8 @@ import {
   HiUser,
   HiMail,
   HiCalendar,
-  HiFire
+  HiFire,
+  HiXCircle
 } from 'react-icons/hi';
 import { GiMeal, GiWeightLiftingUp } from 'react-icons/gi';
 
@@ -65,6 +66,16 @@ export default function AdminPanel() {
       loadData();
     } catch (err) {
       alert('Failed to approve post');
+    }
+  };
+
+  const handleRejectPost = async (postId) => {
+    if (!confirm('Are you sure you want to reject and delete this post?')) return;
+    try {
+      await deletePost(postId);
+      loadData();
+    } catch (err) {
+      alert('Failed to reject post');
     }
   };
 
@@ -214,13 +225,22 @@ export default function AdminPanel() {
                     </span>
                   )}
                 </div>
-                <button
-                  onClick={() => handleApprovePost(post.id)}
-                  className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 hover:scale-105 transition-all flex items-center gap-2 shadow-md"
-                >
-                  <HiCheckCircle className="w-5 h-5" />
-                  Approve Post
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleApprovePost(post.id)}
+                    className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 hover:scale-105 transition-all flex items-center gap-2 shadow-md"
+                  >
+                    <HiCheckCircle className="w-5 h-5" />
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleRejectPost(post.id)}
+                    className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 hover:scale-105 transition-all flex items-center gap-2 shadow-md"
+                  >
+                    <HiXCircle className="w-5 h-5" />
+                    Reject
+                  </button>
+                </div>
               </div>
             </div>
           ))}
