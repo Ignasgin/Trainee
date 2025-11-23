@@ -69,18 +69,33 @@ export default function CreatePost() {
       setTimeout(() => navigate('/'), 2000);
     } catch (err) {
       console.error('Create post error:', err.response?.data);
+      console.error('Full error:', JSON.stringify(err.response?.data, null, 2));
+      
       if (err.response?.data) {
         // Handle different error formats
         let errorMessage = '';
         const errorData = err.response.data;
         
-        if (errorData.detail) {
+        // Check if it's a details object
+        if (errorData.details && typeof errorData.details === 'object') {
+          errorMessage = Object.entries(errorData.details)
+            .map(([field, messages]) => {
+              const fieldName = field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ');
+              const errorMsg = Array.isArray(messages) ? messages.join(', ') : messages;
+              return `${fieldName}: ${errorMsg}`;
+            })
+            .join('\n');
+        } else if (errorData.detail) {
           errorMessage = errorData.detail;
+        } else if (errorData.message && errorData.details) {
+          // Generic message with details object
+          errorMessage = errorData.message + '\n\n' + JSON.stringify(errorData.details, null, 2);
         } else if (errorData.message) {
           errorMessage = errorData.message;
         } else if (typeof errorData === 'object') {
           // Field-specific errors
           errorMessage = Object.entries(errorData)
+            .filter(([key]) => key !== 'error' && key !== 'message')
             .map(([field, messages]) => {
               const fieldName = field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ');
               const errorMsg = Array.isArray(messages) ? messages.join(', ') : messages;
