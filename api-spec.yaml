@@ -1,0 +1,842 @@
+openapi: 3.0.3
+info:
+  title: Trainee Social Platform API
+  description: |
+    RESTful API for a social media platform where users can create posts, rate content, 
+    leave comments, and interact with each other. The platform supports three user roles: 
+    Guest, Registered User, and Administrator.
+    
+    **Authentication:**
+    - JWT-based authentication using access and refresh tokens
+    - Access tokens expire after 15 minutes
+    - Refresh tokens expire after 7 days
+    
+    **Base URL:** https://trainee-api.azurewebsites.net/api
+  version: 1.0.0
+  contact:
+    name: API Support
+    url: https://github.com/Ignasgin/Trainee
+
+servers:
+  - url: https://trainee-api.azurewebsites.net/api
+    description: Production server
+  - url: http://localhost:8000/api
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: User registration, login, token management
+  - name: Posts
+    description: CRUD operations for posts
+  - name: Comments
+    description: Comment management
+  - name: Ratings
+    description: Rating system for posts
+  - name: Users
+    description: User profile management
+  - name: Admin
+    description: Administrative operations
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token obtained from /token/ endpoint
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: "john_doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        bio:
+          type: string
+          nullable: true
+          example: "Food enthusiast and home cook"
+        role:
+          type: string
+          enum: [guest, user, admin]
+          example: "user"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Delicious Pasta Carbonara"
+        content:
+          type: string
+          example: "Here's my favorite carbonara recipe..."
+        author:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            username:
+              type: string
+              example: "john_doe"
+        category:
+          type: string
+          enum: [Breakfast, Lunch, Dinner, Snack, Dessert, Beverage]
+          example: "Dinner"
+        recommendations:
+          type: string
+          nullable: true
+          example: "Use fresh parmesan for best results"
+        calories:
+          type: integer
+          nullable: true
+          example: 650
+        is_public:
+          type: boolean
+          example: true
+        is_approved:
+          type: boolean
+          example: true
+        average_rating:
+          type: number
+          format: float
+          nullable: true
+          example: 4.5
+        ratings_count:
+          type: integer
+          example: 12
+        comments_count:
+          type: integer
+          example: 5
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-20T14:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-21T09:15:00Z"
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        post:
+          type: integer
+          example: 1
+        author:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 2
+            username:
+              type: string
+              example: "jane_smith"
+        content:
+          type: string
+          example: "This looks amazing! Can't wait to try it."
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-20T15:45:00Z"
+
+    Rating:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        post:
+          type: integer
+          example: 1
+        user:
+          type: integer
+          example: 2
+        score:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-20T16:00:00Z"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid credentials"
+        detail:
+          type: string
+          example: "No active account found with the given credentials"
+
+paths:
+  /register/:
+    post:
+      tags:
+        - Authentication
+      summary: Register new user
+      description: Create a new user account with username, email, and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - email
+                - password
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  example: "new_user"
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  minLength: 8
+                  example: "SecurePass123!"
+                bio:
+                  type: string
+                  example: "Passionate about cooking"
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User created successfully"
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /token/:
+    post:
+      tags:
+        - Authentication
+      summary: Obtain JWT tokens
+      description: Login with username and password to receive access and refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: "john_doe"
+                password:
+                  type: string
+                  example: "SecurePass123!"
+      responses:
+        '200':
+          description: Tokens obtained successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  refresh:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /token/refresh/:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Obtain a new access token using a valid refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh
+              properties:
+                refresh:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        '200':
+          description: New access token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /posts/:
+    get:
+      tags:
+        - Posts
+      summary: List all posts
+      description: |
+        Retrieve a list of posts based on user role and filters:
+        - **Guests**: Only approved, public posts
+        - **Users**: Approved public posts + own posts (any status)
+        - **Admins**: All posts
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [Breakfast, Lunch, Dinner, Snack, Dessert, Beverage]
+          description: Filter by category
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search in title and content
+        - name: ordering
+          in: query
+          schema:
+            type: string
+            enum: [created_at, -created_at, average_rating, -average_rating]
+          description: Sort order (prefix with - for descending)
+      responses:
+        '200':
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+
+    post:
+      tags:
+        - Posts
+      summary: Create new post
+      description: Create a new post (requires authentication)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+                - category
+              properties:
+                title:
+                  type: string
+                  example: "Healthy Breakfast Bowl"
+                content:
+                  type: string
+                  example: "Start your day with this nutritious bowl..."
+                category:
+                  type: string
+                  enum: [Breakfast, Lunch, Dinner, Snack, Dessert, Beverage]
+                  example: "Breakfast"
+                recommendations:
+                  type: string
+                  example: "Add fresh berries for extra flavor"
+                calories:
+                  type: integer
+                  example: 350
+                is_public:
+                  type: boolean
+                  example: true
+      responses:
+        '201':
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /posts/{id}/:
+    get:
+      tags:
+        - Posts
+      summary: Get post details
+      description: Retrieve detailed information about a specific post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Post ID
+      responses:
+        '200':
+          description: Post details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Posts
+      summary: Update post
+      description: Update an existing post (only author or admin can update)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Post ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                category:
+                  type: string
+                recommendations:
+                  type: string
+                calories:
+                  type: integer
+                is_public:
+                  type: boolean
+      responses:
+        '200':
+          description: Post updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation error
+        '401':
+          description: Authentication required
+        '403':
+          description: Permission denied
+        '404':
+          description: Post not found
+
+    delete:
+      tags:
+        - Posts
+      summary: Delete post
+      description: Delete a post (only author or admin can delete)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Post ID
+      responses:
+        '204':
+          description: Post deleted successfully
+        '401':
+          description: Authentication required
+        '403':
+          description: Permission denied
+        '404':
+          description: Post not found
+
+  /posts/{id}/comments/:
+    get:
+      tags:
+        - Comments
+      summary: List post comments
+      description: Retrieve all comments for a specific post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Post ID
+      responses:
+        '200':
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '404':
+          description: Post not found
+
+    post:
+      tags:
+        - Comments
+      summary: Create comment
+      description: Add a new comment to a post (requires authentication)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Post ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  example: "Great recipe! I tried it and loved it."
+      responses:
+        '201':
+          description: Comment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Validation error
+        '401':
+          description: Authentication required
+        '404':
+          description: Post not found
+
+  /comments/{id}/:
+    delete:
+      tags:
+        - Comments
+      summary: Delete comment
+      description: Delete a comment (only author or admin can delete)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Comment ID
+      responses:
+        '204':
+          description: Comment deleted successfully
+        '401':
+          description: Authentication required
+        '403':
+          description: Permission denied
+        '404':
+          description: Comment not found
+
+  /posts/{id}/rate/:
+    post:
+      tags:
+        - Ratings
+      summary: Rate a post
+      description: |
+        Submit or update a rating for a post (requires authentication).
+        Users can only have one rating per post - subsequent ratings will update the existing one.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Post ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - score
+              properties:
+                score:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+      responses:
+        '200':
+          description: Rating submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Rating submitted successfully"
+                  rating:
+                    $ref: '#/components/schemas/Rating'
+                  average_rating:
+                    type: number
+                    example: 4.5
+        '400':
+          description: Validation error (e.g., cannot rate own post)
+        '401':
+          description: Authentication required
+        '404':
+          description: Post not found
+
+  /users/me/:
+    get:
+      tags:
+        - Users
+      summary: Get current user profile
+      description: Retrieve the authenticated user's profile information
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Authentication required
+
+    put:
+      tags:
+        - Users
+      summary: Update user profile
+      description: Update the authenticated user's profile information
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                bio:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error
+        '401':
+          description: Authentication required
+
+  /users/{id}/:
+    get:
+      tags:
+        - Users
+      summary: Get user profile by ID
+      description: Retrieve public profile information for any user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+  /admin/posts/:
+    get:
+      tags:
+        - Admin
+      summary: List all posts (admin)
+      description: Retrieve all posts including unapproved ones (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: is_approved
+          in: query
+          schema:
+            type: boolean
+          description: Filter by approval status
+      responses:
+        '200':
+          description: List of all posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '401':
+          description: Authentication required
+        '403':
+          description: Admin access required
+
+  /admin/posts/{id}/approve/:
+    post:
+      tags:
+        - Admin
+      summary: Approve post
+      description: Approve a post for public visibility (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Post ID
+      responses:
+        '200':
+          description: Post approved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Post approved successfully"
+                  post:
+                    $ref: '#/components/schemas/Post'
+        '401':
+          description: Authentication required
+        '403':
+          description: Admin access required
+        '404':
+          description: Post not found
+
+  /admin/users/:
+    get:
+      tags:
+        - Admin
+      summary: List all users
+      description: Retrieve a list of all registered users (admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Authentication required
+        '403':
+          description: Admin access required
+
+  /debug/posts/:
+    get:
+      tags:
+        - Admin
+      summary: Debug posts endpoint
+      description: |
+        Debug endpoint showing all posts with visibility logic (admin only).
+        Returns posts with additional debug information about approval status and visibility.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of posts with debug info
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '401':
+          description: Authentication required
+        '403':
+          description: Admin access required
